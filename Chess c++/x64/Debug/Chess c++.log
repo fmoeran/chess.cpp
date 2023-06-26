@@ -1,0 +1,16 @@
+﻿  bitboard.cpp
+C:\coding\Chess c++\Chess c++\src\bitboard.cpp(154,14): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+  display.cpp
+C:\coding\Chess c++\Chess c++\src\display.cpp(193,13): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\coding\Chess c++\Chess c++\src\display.cpp(194,13): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+  game.cpp
+  generator.cpp
+  magics.cpp
+C:\coding\Chess c++\Chess c++\src\magics.cpp(147,60): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  move.cpp
+  pieces.cpp
+  Generating Code...
+C:\coding\Chess c++\Chess c++\src\bitboard.cpp(79): warning C4172: returning address of local variable or temporary: out
+  perft.cpp
+C:\coding\Chess c++\Chess c++\src\perft.cpp(11,22): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  Chess c++.vcxproj -> C:\coding\Chess c++\x64\Debug\chess.cpp.exe
