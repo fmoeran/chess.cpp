@@ -82,7 +82,6 @@ namespace chess
 		addRookMoves();
 		addQueenMoves();
 		addKingMoves();
-		
 		//addCastleMoves();
 		//addPromotionMoves();
 		//addEnPassantMoves();
@@ -108,12 +107,12 @@ namespace chess
 
 
 	void Generator::addMoves(int position, Bitmap map, Flag flag, Type promotionPiece) {
-		moves.resize(moves.size() + std::popcount(map));
 		Bitmap startMap = bitset[position];
 		while (map) {
 			
 			Bitmap endMap = map & (~map+1);
-			moves.push_back(Move(startMap, endMap, flag, promotionPiece));
+			Move move = Move(startMap, endMap, flag, promotionPiece);
+			moves.push_back(move);
 			map = map & (map - 1);
 		}
 	}
@@ -161,6 +160,7 @@ namespace chess
 			Bitmask pinMask = pinMasks[position];
 			Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
 			addMoves(position, legalMoves, Flag::NONE, PAWN);
+			
 		}
 	}
 
@@ -178,9 +178,8 @@ namespace chess
 	void Generator::addKingMoves() {
 		int position = getSinglePosition(board->positions[board->colour][KING]);
 		Bitmask pseudoMoves = pseudoKing(position);
-		printmap(pseudoMoves);
 		Bitmask pinMask = pinMasks[position];
-		Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+		Bitmask legalMoves = pseudoMoves & ~attackMask & enemyEmptyMask;
 		addMoves(position, legalMoves, Flag::NONE, PAWN);
 	}
 

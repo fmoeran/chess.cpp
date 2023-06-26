@@ -125,6 +125,7 @@ void chess::Game::playerMove() {
 
 void chess::Game::updateCurrentMoves() {
 	currentLegalMoves = generator.getLegalMoves();
+	
 }
 
 void chess::Game::grabPosition(Bitmap posmap) {
@@ -214,8 +215,8 @@ void chess::Game::resetMoveHighlights() {
 	display.highlightMap = 0ULL;
 }
 
-int main() {
+/*int main() {
 	Game game;
 	
 	Result res = game.run();
-}
+}*/
