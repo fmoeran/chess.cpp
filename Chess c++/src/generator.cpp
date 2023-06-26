@@ -97,7 +97,55 @@ namespace chess
 		checkMask = ~0ULL;
 	}
 
-	void Generator::loadAttackMask() {}
+	void Generator::loadAttackMask() {
+		Bitmap teamKingMap = board->positions[board->colour][KING];
+		// ignore the king
+		board->positions[board->colour][KING] = 0ULL;
+		board->all ^= teamKingMap;
+
+		Bitmask result = 0ULL;
+
+		Bitmap pawnMap = board->positions[1 - board->colour][PAWN];
+		while (pawnMap) {
+			int position = getNextPosition(pawnMap);
+			result |= pawnAttackLookup[1-board->colour][position];
+		}
+
+		Bitmap knightMap = board->positions[1 - board->colour][KNIGHT];
+		while (knightMap) {
+			int position = getNextPosition(knightMap);
+			result |= pseudoKnight(position);
+		}
+
+		Bitmap bishopMap = board->positions[1 - board->colour][BISHOP];
+		while (bishopMap) {
+			int position = getNextPosition(bishopMap);
+			result |= pseudoBishop(position);
+		}
+
+		Bitmap rookMap = board->positions[1 - board->colour][ROOK];
+		while (rookMap) {
+			int position = getNextPosition(rookMap);
+			result |= pseudoRook(position);
+		}
+
+		Bitmap queenMap = board->positions[1 - board->colour][QUEEN];
+		while (queenMap) {
+			int position = getNextPosition(queenMap);
+			result |= pseudoQueen(position);
+		}
+
+		Bitmap kingMap = board->positions[1 - board->colour][KING];
+		
+		int position = getSinglePosition(kingMap);
+		result |= pseudoKing(position);
+		//printmap(result);
+
+		board->all |= teamKingMap;
+		board->positions[board->colour][KING] = teamKingMap;
+
+		attackMask = result;
+	}
 
 	void Generator::loadPinMasks() {
 		for (int position = 0; position < 64; position++) {
@@ -202,7 +250,11 @@ namespace chess
 
 		return forwardMap | attackMap;
 	}
-	Bitmask Generator::pseudoKnight(int pos) { return 0ULL; }
+
+	Bitmask Generator::pseudoKnight(int pos) { 
+		return knightPseudoLookup[pos];
+	}
+
 	Bitmask Generator::pseudoBishop(int pos) { 
 		return bishopPseudoLookup[pos][board->all];
 	}

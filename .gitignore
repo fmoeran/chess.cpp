@@ -1,4 +1,3 @@
 .vs/*
 x64/*
-Debug/*
-Chess c++/x64/*
+Chess.cpp/x64/*Chess c++/.vs/*

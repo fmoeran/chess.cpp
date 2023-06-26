@@ -1,0 +1,8 @@
+﻿  perft.cpp
+C:\coding\Chess c++\Chess c++\src\perft.cpp(11,22): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  Generating code
+  1 of 852 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Chess c++.vcxproj -> C:\coding\Chess c++\x64\Release\chess.cpp.exe

@@ -2,7 +2,7 @@
 
 namespace chess
 {
-	using Colour = int;
+	using Colour = bool;
 	using Type = int;
 	static char pieceLetters[7] = "PNBRQK";
 
