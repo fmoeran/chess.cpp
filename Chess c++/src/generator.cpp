@@ -33,6 +33,7 @@ namespace chess
 	Bitmask knightPseudoLookup[64];
 	MagicLookup bishopPseudoLookup[64];
 	MagicLookup rookPseudoLookup[64];
+	Bitmask kingPseudoLookup[64];
 	
 
 	struct Startup {
@@ -42,6 +43,7 @@ namespace chess
 			loadKnightPseudoMoves(knightPseudoLookup);
 			loadBishopPseudoMoves(bishopPseudoLookup);
 			loadRookPseudoMoves(rookPseudoLookup);
+			loadKingPseudoMoves(kingPseudoLookup);
 		}
 	};
 
@@ -64,8 +66,11 @@ namespace chess
 
 	std::vector<Move> Generator::getLegalMoves() {
 		assert(board);
+
 		moves.clear();
 		
+		if (!board->positions[board->colour][KING]) return moves;
+
 		loadEnemyEmptyMask();
 		loadCheckMask();
 		loadAttackMask();
@@ -76,7 +81,7 @@ namespace chess
 		addBishopMoves();
 		addRookMoves();
 		addQueenMoves();
-		//addKingMoves();
+		addKingMoves();
 		
 		//addCastleMoves();
 		//addPromotionMoves();
@@ -170,7 +175,14 @@ namespace chess
 		}
 	}
 	
-	void Generator::addKingMoves() {}
+	void Generator::addKingMoves() {
+		int position = getSinglePosition(board->positions[board->colour][KING]);
+		Bitmask pseudoMoves = pseudoKing(position);
+		printmap(pseudoMoves);
+		Bitmask pinMask = pinMasks[position];
+		Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+		addMoves(position, legalMoves, Flag::NONE, PAWN);
+	}
 
 	void Generator::addCastleMoves() {}
 
@@ -201,7 +213,9 @@ namespace chess
 	Bitmask Generator::pseudoQueen(int pos) { 
 		return pseudoBishop(pos) | pseudoRook(pos);
 	}
-	Bitmask Generator::pseudoKing(int pos) { return 0ULL; }
+	Bitmask Generator::pseudoKing(int pos) { 
+		return kingPseudoLookup[pos];
+	}
 
 	void loadPawnPseudoPushMoves(Bitmask arr[2][64]) {
 		for (int pos = 0; pos < 64; pos++) {
@@ -262,6 +276,27 @@ namespace chess
 	void loadRookPseudoMoves(MagicLookup arr[64]) {
 		for (int pos = 0; pos < 64; pos++) {
 			arr[pos] = MagicLookup(pos, false);
+		}
+	}
+
+	void loadKingPseudoMoves(Bitmask arr[64]) {
+		for (int pos = 0; pos < 64; pos++) {
+			int row = pos / 8, col = 7 - pos % 8;
+			Bitmap neighbours = 0ULL;
+			if (row > 0) {
+				neighbours |= bitset[pos - 8];
+				if (col > 0)  neighbours |= bitset[pos - 7];
+				if (col < 7)  neighbours |= bitset[pos - 9];
+			}
+			if (row < 7) {
+				neighbours |= bitset[pos + 8];
+				if (col > 0)  neighbours |= bitset[pos + 9];
+				if (col < 7)  neighbours |= bitset[pos + 7];
+			}
+			if (col > 0) neighbours |= bitset[pos + 1];
+			if (col < 7) neighbours |= bitset[pos - 1];
+
+			arr[pos] = neighbours;
 		}
 	}
 }

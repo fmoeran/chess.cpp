@@ -7,6 +7,8 @@
 #include <map>
 #include <stdexcept>
 
+//#pragma intrinsic(_BitScanForward)
+
 using namespace chess;
 
 const static std::string startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QKqk - 0 1";
@@ -29,8 +31,16 @@ void chess::printmap(Bitmap bitmap)
 	std::cout << std::endl;
 }
 
+
 int chess::getSinglePosition(Bitmap bitmap)
 {
+	
+	unsigned long out;
+	_BitScanForward64(&out, bitmap);
+	return out;
+	/*
+	equal to:
+
 	if (bitmap == 0) return -1;
 	bitmap &= ~bitmap + 1;
 
@@ -44,6 +54,8 @@ int chess::getSinglePosition(Bitmap bitmap)
 	if (bitmap & 0xaaaaaaaaaaaaaaaa) count += 1;
 
 	return count;
+	*/
+	
 }
 
 int chess::getNextPosition(Bitmap& bitmap) {
@@ -52,16 +64,7 @@ int chess::getNextPosition(Bitmap& bitmap) {
 
 	bitmap = bitmap ^ positionMap;
 
-	int count = 0;
-
-	if (positionMap & 0xffffffff00000000) count += 32;
-	if (positionMap & 0xffff0000ffff0000) count += 16;
-	if (positionMap & 0xff00ff00ff00ff00) count += 8;
-	if (positionMap & 0xf0f0f0f0f0f0f0f0) count += 4;
-	if (positionMap & 0xcccccccccccccccc) count += 2;
-	if (positionMap & 0xaaaaaaaaaaaaaaaa) count += 1;
-
-	return count;
+	return getSinglePosition(positionMap);
 }
 
 Log::Log(BoardState boardInfo) : info(boardInfo) {}
