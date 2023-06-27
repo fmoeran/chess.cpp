@@ -3,7 +3,7 @@
 namespace chess
 {
 	using Colour = bool;
-	using Type = int;
+	using Type = unsigned char;
 	static char pieceLetters[7] = "PNBRQK";
 
 	const enum PieceType {
