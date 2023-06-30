@@ -70,8 +70,7 @@ int chess::getNextPosition(Bitmap& bitmap) {
 Log::Log(BoardState boardInfo) : info(boardInfo) {}
 
 void Log::addPiece(Piece piece, Bitmap mapPosition) {
-	int intPosition = getSinglePosition(mapPosition);
-	pieceInfo.push_back(PieceInfo{ piece, mapPosition, intPosition });
+	pieceInfo.push_back(PieceInfo{ piece, mapPosition});
 }
 
 BoardState& chess::Board::getGameState() {
@@ -199,6 +198,10 @@ void chess::Board::makeMove(Move move) {
 	currentlyAltering.clear();
 	Log newLog(getGameState());
 
+	if (!(bool)(move.start & teamMaps[colour])) {
+		throw std::invalid_argument("Cannot move from an empty square");
+	}
+
 	// search for moved piece
 	Type startPieceType = 0;
 	for (Bitmap posMap : positions[colour]) {
@@ -206,10 +209,6 @@ void chess::Board::makeMove(Move move) {
 			break;
 		}
 		startPieceType++;
-	}
-
-	if (startPieceType > KING) {
-		throw std::invalid_argument("Cannot move from an empty square");
 	}
 	
 
@@ -221,21 +220,20 @@ void chess::Board::makeMove(Move move) {
 	case Flag::CASTLE:     movePieceCastle(move.start, move.end); break;
 	}
 
-	// search for taken piece
-	Type endPieceType = 0;
-	for (Bitmap posmap : positions[!colour]) {
-		if (posmap & move.end) {
-			break;
-		}
-		endPieceType++;
-	}
-
-	bool isCapture = endPieceType <= KING;
-	// remove the taken piece
+	bool isCapture = (move.end & teamMaps[1 - colour]);
 	if (isCapture) {
+		// search for taken piece
+		Type endPieceType = 0;
+		for (Bitmap posmap : positions[!colour]) {
+			if (posmap & move.end) {
+				break;
+			}
+			endPieceType++;
+		}
 		takePiece(move.end, endPieceType);
 	}
 
+	
 	// update halfMoves
 	if (!isCapture && move.flag != Flag::EN_PASSANT) {
 		halfMoves = 0;
@@ -253,11 +251,12 @@ void chess::Board::makeMove(Move move) {
 		leftCastles[colour] = false;
 	}
 
+
+	newLog.pieceInfo.reserve(currentlyAltering.size());
 	for (std::pair<Piece, Bitmap> alter : currentlyAltering) {
 		newLog.addPiece(alter.first, alter.second);
 	}
-
-	logs.push_back(newLog);
+	logs.push(newLog);
 
 	currentlyAltering.clear();
 
@@ -284,7 +283,6 @@ void chess::Board::movePieceEp(Bitmap start, Bitmap end) {
 	else                 epPos = end << 8;
 
 	takePiece(epPos, PAWN);
-	
 }
 
 void chess::Board::movePiecePromotion(Bitmap start, Bitmap end, Type promotionType) {
@@ -374,8 +372,8 @@ void chess::Board::removeSingleCastle(Bitmap rookPosition, Colour clr) {
 }
 
 void chess::Board::unmakeMove() {
-	Log log = logs.back();
-	logs.pop_back();
+	Log log = logs.top();
+	logs.pop();
 	for (PieceInfo info : log.pieceInfo) {
 		positions[info.piece.colour][info.piece.type] ^= info.mapPosition;
 	}

@@ -68,6 +68,7 @@ namespace chess
 		assert(board);
 
 		moves.clear();
+		//moves.reserve(maxMoveCount);
 		
 		if (!board->positions[board->colour][KING]) return moves;
 
@@ -85,6 +86,8 @@ namespace chess
 		//addCastleMoves();
 		//addPromotionMoves();
 		//addEnPassantMoves();
+
+		//moves.shrink_to_fit();
 
 		return moves;
 	}
@@ -139,7 +142,6 @@ namespace chess
 		
 		int position = getSinglePosition(kingMap);
 		result |= pseudoKing(position);
-		//printmap(result);
 
 		board->all |= teamKingMap;
 		board->positions[board->colour][KING] = teamKingMap;

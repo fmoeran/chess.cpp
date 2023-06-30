@@ -3,7 +3,6 @@
 using namespace chess;
 
 
-
 bool Move::operator==(Move other) 
 {
 	return start == other.start && end == other.end && flag == other.flag && promotionPiece == other.promotionPiece;

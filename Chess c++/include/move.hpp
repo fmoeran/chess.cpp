@@ -15,6 +15,8 @@ namespace chess
 
 	static const char columnLetters[9] = "abcdefgh";
 
+	const size_t maxMoveCount = 218; // maximum possible number of moves from any position
+
 	struct Move {
 	public:
 		Bitmap start, end;

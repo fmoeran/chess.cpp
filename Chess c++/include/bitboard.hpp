@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include <stack>
 
 namespace chess
 {
@@ -41,7 +42,6 @@ namespace chess
 	struct PieceInfo {
 		Piece piece;
 		Bitmap mapPosition;
-		int intPosition;
 	};
 
 	struct Log {
@@ -51,7 +51,6 @@ namespace chess
 		Log(BoardState boardInfo);
 
 		void addPiece(Piece piece, Bitmap mapPosition);
-
 	};
 
 	struct Board {
@@ -74,7 +73,7 @@ namespace chess
 		// altered and reset each make_move call
 		std::vector<std::pair<Piece, Bitmap>> currentlyAltering;
 
-		std::vector<Log> logs;
+		std::stack<Log> logs;
 
 		Board(Bitmap wp, Bitmap wn, Bitmap wb, Bitmap wr, Bitmap wq, Bitmap wk, Bitmap bp, Bitmap bn, Bitmap bb, Bitmap br, Bitmap bq, Bitmap bk, Bitmap ep,
 		      bool wlc, bool wrc, bool blc, bool brc, int move_count, int hm, Colour colour);
