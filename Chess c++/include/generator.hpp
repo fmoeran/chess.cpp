@@ -21,6 +21,7 @@ namespace chess
 		
 	private:
 		std::vector<Move> moves;
+		size_t movesCount;
 		
 		// every position that is either an enemy or empty
 		Bitmask enemyEmptyMask;

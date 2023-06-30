@@ -44,18 +44,23 @@ int perft(int depth, bool printMoves = true) {
 
 int main() {
 
-#ifdef NDEBUG
+	int depth;
+	//std::cout << "depth: ";
+	//std::cin >> depth;
+	
+	depth = 6;
+
+	std::cout << "searching " << generator.getLegalMoves().size() << " moves." << std::endl;
+
 	auto t0 = std::chrono::high_resolution_clock::now();
 
-	int depth = 6;
 	int nodes = perft(depth);
+	
 	auto t1 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
 	double elapsed = (double)duration.count() / 1000;
 	std::cout << "Finished in " << elapsed << "s" << std::endl;
 	std::cout << formatCommas(std::to_string((int)((double)nodes / elapsed))) << " n/s" << std::endl;
 	std::cout << formatCommas(std::to_string(nodes)) << " nodes" << std::endl;
-#else
-	std::cout << "Please set project to release mode" << std::endl;
-#endif
+
 }

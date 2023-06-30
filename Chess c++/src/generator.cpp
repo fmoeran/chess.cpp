@@ -68,13 +68,18 @@ namespace chess
 		assert(board);
 
 		moves.clear();
+		//moves.resize(maxMoveListSize);
 		
 		if (!board->positions[board->colour][KING]) return moves;
+
+		// load member variables
 
 		loadEnemyEmptyMask();
 		loadCheckMask();
 		loadAttackMask();
 		loadPinMasks();
+
+		// update moves
 
 		addPawnMoves();
 		addKnightMoves();
@@ -94,7 +99,29 @@ namespace chess
 	}
 
 	void Generator::loadCheckMask() {
-		checkMask = ~0ULL;
+		// TODO fix sliding pieces
+		Bitmap kingMap = board->positions[board->colour][KING];
+		int kingPos = getSinglePosition(kingMap);
+
+		Bitmask result = ~0ULL;
+
+
+		Bitmap* enemies = board->positions[1 - board->colour];
+
+
+		Bitmap knightMap = pseudoKnight(kingPos) & enemies[KNIGHT];
+		Bitmap pawnMap = pawnAttackLookup[board->colour][kingPos] & enemies[PAWN];
+		Bitmap rookMap = pseudoRook(kingPos) & (enemies[ROOK] | enemies[QUEEN]);
+		Bitmap bishopMap = pseudoBishop(kingPos) & (enemies[BISHOP] | enemies[QUEEN]);
+
+		if (!knightMap) knightMap = ~0;
+		if (!pawnMap) pawnMap = ~0;
+		if (!rookMap) rookMap = ~0;
+		if (!bishopMap) bishopMap = ~0;
+
+		result &= knightMap & pawnMap & rookMap & bishopMap;
+
+		checkMask = result;
 	}
 
 	void Generator::loadAttackMask() {
@@ -150,6 +177,42 @@ namespace chess
 	void Generator::loadPinMasks() {
 		for (int position = 0; position < 64; position++) {
 			pinMasks[position] = ~0ULL;
+		}
+
+		int kingPos = getSinglePosition(board->positions[board->colour][KING]);
+
+		Bitmap rookMap = board->positions[1 - board->colour][ROOK];
+		Bitmap bishopMap = board->positions[1 - board->colour][BISHOP];
+		Bitmap queenMap = board->positions[1 - board->colour][QUEEN];
+
+		// rooks
+		Bitmap rookPseudo = rookPseudoLookup[kingPos][board->all];
+		Bitmap teamRookPseudo = rookPseudo & board->teamMaps[board->colour];
+		while (teamRookPseudo) {
+			Bitmap newPosition = teamRookPseudo & (~teamRookPseudo+1);
+			teamRookPseudo &= teamRookPseudo - 1;
+
+			Bitmap newRookPseudo = rookPseudoLookup[kingPos][board->all ^ newPosition];
+			if (newRookPseudo & (rookMap | queenMap) & ~rookPseudo) {
+				int intPos = getSinglePosition(newPosition);
+				Bitmap newPositionPseudo = rookPseudoLookup[intPos][board->all];
+				pinMasks[intPos] &= newPositionPseudo & newRookPseudo;
+			}
+		}
+
+		// bishops
+		Bitmap bishopPseudo = bishopPseudoLookup[kingPos][board->all];
+		Bitmap teamBishopPseudo = bishopPseudo & board->teamMaps[board->colour];
+		while (teamBishopPseudo) {
+			Bitmap newPosition = teamBishopPseudo & (~teamBishopPseudo + 1);
+			teamBishopPseudo &= teamBishopPseudo - 1;
+
+			Bitmap newBishopPseudo = bishopPseudoLookup[kingPos][board->all ^ newPosition];
+			if (newBishopPseudo & (bishopMap | queenMap) & ~bishopPseudo) {
+				int intPos = getSinglePosition(newPosition);
+				Bitmap newPositionPseudo = bishopPseudoLookup[intPos][board->all];
+				pinMasks[intPos] &= newPositionPseudo & newBishopPseudo;
+			}
 		}
 	}
 

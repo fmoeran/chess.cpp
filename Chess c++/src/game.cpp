@@ -217,8 +217,9 @@ namespace chess
 	}
 }
 
-/*int main() {
+int main() {
+	using namespace chess;
 	Game game;
 	
 	Result res = game.run();
-}*/
+}

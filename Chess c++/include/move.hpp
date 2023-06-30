@@ -14,6 +14,7 @@ namespace chess
 	};
 
 	static const char columnLetters[9] = "abcdefgh";
+	const size_t maxMoveListSize = 218;
 
 	struct Move {
 	public:

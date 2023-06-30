@@ -39,7 +39,7 @@ int chess::getSinglePosition(Bitmap bitmap)
 	_BitScanForward64(&out, bitmap);
 	return out;
 	/*
-	equal to:
+	//equal to:
 
 	if (bitmap == 0) return -1;
 	bitmap &= ~bitmap + 1;
