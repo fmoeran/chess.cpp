@@ -43,8 +43,6 @@ int perft(int depth, bool printMoves = true) {
 }
 
 int main() {
-
-#ifdef NDEBUG
 	auto t0 = std::chrono::high_resolution_clock::now();
 
 	int depth = 6;
@@ -55,7 +53,4 @@ int main() {
 	std::cout << "Finished in " << elapsed << "s" << std::endl;
 	std::cout << formatCommas(std::to_string((int)((double)nodes / elapsed))) << " n/s" << std::endl;
 	std::cout << formatCommas(std::to_string(nodes)) << " nodes" << std::endl;
-#else
-	std::cout << "Please set project to release mode" << std::endl;
-#endif
 }

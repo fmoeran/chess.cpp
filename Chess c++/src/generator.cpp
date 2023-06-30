@@ -159,10 +159,9 @@ namespace chess
 	void Generator::addMoves(int position, Bitmap map, Flag flag, Type promotionPiece) {
 		Bitmap startMap = bitset[position];
 		while (map) {
-			
 			Bitmap endMap = map & (~map+1);
 			Move move = Move(startMap, endMap, flag, promotionPiece);
-			moves.push_back(move);
+			moves.emplace_back(move);
 			map = map & (map - 1);
 		}
 	}

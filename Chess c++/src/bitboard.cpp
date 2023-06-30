@@ -203,7 +203,7 @@ void chess::Board::makeMove(Move move) {
 	}
 
 	// search for moved piece
-	Type startPieceType = 0;
+	Type startPieceType = PAWN;
 	for (Bitmap posMap : positions[colour]) {
 		if (posMap & move.start) {
 			break;

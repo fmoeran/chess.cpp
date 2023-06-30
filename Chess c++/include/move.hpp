@@ -2,6 +2,7 @@
 
 #include "pieces.hpp"
 
+#include <memory>
 #include <string>
 
 namespace chess
@@ -34,5 +35,22 @@ namespace chess
 
 		std::string notate();
 
+	};
+
+	struct MoveList {
+	public:
+		using iterator = Move*;
+		MoveList();
+
+		void add(const Move& move);
+
+		iterator begin();
+		iterator end();
+
+		size_t size();
+		void clear();
+	private:
+		Move moves[maxMoveCount];
+		size_t count;
 	};
 }
