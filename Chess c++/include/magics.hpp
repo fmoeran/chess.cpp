@@ -14,14 +14,14 @@ namespace chess
 		// gets the pseudo move mask for the piece when facing allBoard
 		// \param allBoard: positions of every piece on the board
 		// \return mask of pseudo move positions that can be made
-		Bitmask operator[] (Bitmask allBoard);
+		Bitmap operator[] (Bitmap allBoard);
 	private:
 		int square;      // square on the boardthe lookup is for 
 		bool isBishop;   // True bishop; False rook
-		Bitmask mask;    // the positions that the piece would see without any enemies on the board
-		Bitmask magic;   // magic number to transform the mask with a given blocker board
+		Bitmap mask;    // the positions that the piece would see without any enemies on the board
+		Bitmap magic;   // magic number to transform the mask with a given blocker board
 		int numBits;     // number of bits in mask
-		std::vector<Bitmask> lookup;
+		std::vector<Bitmap> lookup;
 
 	};
 

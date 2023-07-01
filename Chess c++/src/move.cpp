@@ -3,76 +3,69 @@
 
 namespace chess
 {
-
-	bool Move::operator==(Move other)
-	{
-		return start == other.start && end == other.end && flag == other.flag && promotionPiece == other.promotionPiece;
+	// takes either knight, bishop, rook, queen and squashes it to the first 2 bits
+	int pieceToPromotionCode(Type piece) {
+		return piece - 1;
+	}
+	bool Move::operator==(Move other){
+		return value == other.value;
 	}
 
-	Move::Move(Bitmap pStart, Bitmap pEnd)
-		: start(pStart), end(pEnd), flag(Flag::NONE), promotionPiece(PAWN) {}
+	Move::Move(int pStart, int pEnd){
+		value = pStart | (pEnd << 6);
+	}
 
-	chess::Move::Move(Bitmap pStart, Bitmap pEnd, Flag flag, Type pPiece)
-		: start(pStart), end(pEnd), flag(flag), promotionPiece(pPiece) {}
+	chess::Move::Move(int pStart, int pEnd, Flag flag, Type pPiece){
+		value = pStart | (pEnd << 6) | ((int)flag << 12) | (pieceToPromotionCode(pPiece) << 14);
+	}
 
 	chess::Move::Move()
 	{
-		start = 0;
-		end = 0;
+		value = 0;
 	}
 
-	Move Move::promotion(Bitmap pStart, Bitmap pEnd, Type pPiece)
+	Move Move::promotion(int pStart, int pEnd, Type pPiece)
 	{
 		return Move(pStart, pEnd, Flag::PROMOTION, pPiece);
 	}
 
-	Move Move::enPassant(Bitmap pStart, Bitmap pEnd)
+	Move Move::enPassant(int pStart, int pEnd)
 	{
 		return Move(pStart, pEnd, Flag::EN_PASSANT, PAWN);
 	}
 
-	Move Move::castle(Bitmap pStart, Bitmap pEnd)
+	Move Move::castle(int pStart, int pEnd)
 	{
 		return Move(pStart, pEnd, Flag::CASTLE, PAWN);
 	}
 
+	int Move::start() {
+		return value & 0b111111;;
+	}
+
+	int Move::end() {
+		return (value >> 6) & 0b111111;
+	}
+
+	Flag Move::flag() {
+		return (Flag)(value>>12 & 0b11);
+	}
+
+	Type Move::promotionPiece() {
+		return ((value >> 14) & 0b11) + 1;
+	}
+
+
 	std::string Move::notate()
 	{
-		Bitmask position = 0, startPos = 0, endPos = 0;
-		while ((1ULL << position) < (1ULL << 63)) {
-			if (start == (1ULL << position)) startPos = position;
-			if (end == (1ULL << position)) endPos = position;
-			position++;
-		}
+		int startPos = start();
+		int endPos = end();
 		std::string starting = std::string({ columnLetters[7 - startPos % 8], (char)(startPos / 8 + 1 + '0') });
 		std::string ending = std::string({ columnLetters[7 - endPos % 8], (char)(endPos / 8 + 1 + '0') });
 		std::string promotion = "";
-		if (flag == Flag::PROMOTION) promotion += pieceLetters[promotionPiece];
+		if (flag() == Flag::PROMOTION) promotion += pieceLetters[promotionPiece()];
 		return starting + ending + promotion;
 	}
 
-	MoveList::MoveList() {
-		count = 0u;
-	}
-
-	void MoveList::add(const Move& move) {
-		moves[count] = move;
-		count++;
-	}
-
-	MoveList::iterator MoveList::begin() {
-		return &moves[0];
-	}
-
-	MoveList::iterator MoveList::end() {
-		return &moves[count];
-	}
-
-	size_t MoveList::size() {
-		return count;
-	}
-
-	void MoveList::clear() {
-		count = 0u;
-	}
+	
 }

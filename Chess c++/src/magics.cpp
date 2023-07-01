@@ -39,8 +39,8 @@ namespace chess
 			return randomMap() & randomMap() & randomMap();
 		}
 		// pseudo moves ignoring other pieceas
-		Bitmask rmask(int sq) {
-			Bitmask result = 0;
+		Bitmap rmask(int sq) {
+			Bitmap result = 0;
 			int rank = sq / 8, file = sq % 8;
 			for (int r = rank + 1; r < 7; r++) result |= 1ULL << (r * 8 + file);
 			for (int r = rank - 1; r > 0; r--) result |= 1ULL << (r * 8 + file);
@@ -49,8 +49,8 @@ namespace chess
 			return result;
 		}
 
-		Bitmask bmask(int sq) {
-			Bitmask result = 0;
+		Bitmap bmask(int sq) {
+			Bitmap result = 0;
 			int rank = sq / 8, file = sq % 8;
 			for (int r = rank + 1, f = file + 1; r < 7 && f < 7; r++, f++) result |= 1ULL << (r * 8 + f);
 			for (int r = rank + 1, f = file - 1; r < 7 && f > 0; r++, f--) result |= 1ULL << (r * 8 + f);
@@ -59,61 +59,61 @@ namespace chess
 			return result;
 		}
 
-		Bitmask ratt(int sq, Bitmap blockMap) {
-			Bitmask result = 0;
+		Bitmap ratt(int sq, Bitmap blockMap) {
+			Bitmap result = 0;
 			int rank = sq / 8, file = sq % 8;
 
 			for (int r = rank + 1; r < 8; r++) {
-				Bitmask pos = 1ULL << (r * 8 + file);
+				Bitmap pos = 1ULL << (r * 8 + file);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			for (int r = rank - 1; r >= 0; r--) {
-				Bitmask pos = 1ULL << (r * 8 + file);
+				Bitmap pos = 1ULL << (r * 8 + file);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			for (int f = file + 1; f < 8; f++) {
-				Bitmask pos = 1ULL << (rank * 8 + f);
+				Bitmap pos = 1ULL << (rank * 8 + f);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			for (int f = file - 1; f >= 0; f--) {
-				Bitmask pos = 1ULL << (rank * 8 + f);
+				Bitmap pos = 1ULL << (rank * 8 + f);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			return result;
 		}
 
-		Bitmask batt(int sq, Bitmap blockMap) {
-			Bitmask result = 0;
+		Bitmap batt(int sq, Bitmap blockMap) {
+			Bitmap result = 0;
 			int rank = sq / 8, file = sq % 8;
 
 			for (int r = rank + 1, f = file + 1; r <= 7 && f <= 7; r++, f++) {
-				Bitmask pos = 1ULL << (r * 8 + f);
+				Bitmap pos = 1ULL << (r * 8 + f);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			for (int r = rank + 1, f = file - 1; r <= 7 && f >= 0; r++, f--) {
-				Bitmask pos = 1ULL << (r * 8 + f);
+				Bitmap pos = 1ULL << (r * 8 + f);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			for (int r = rank - 1, f = file + 1; r >= 0 && f <= 7; r--, f++) {
-				Bitmask pos = 1ULL << (r * 8 + f);
+				Bitmap pos = 1ULL << (r * 8 + f);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			for (int r = rank - 1, f = file - 1; r >= 0 && f >= 0; r--, f--) {
-				Bitmask pos = 1ULL << (r * 8 + f);
+				Bitmap pos = 1ULL << (r * 8 + f);
 				result |= pos;
 				if (blockMap & pos) break;
 			}
 			return result;
 		}
 		// transforms a board of blockers by a given magic number
-		size_t transform(Bitmap board, Bitmask magicNum, int numBits) {
+		size_t transform(Bitmap board, Bitmap magicNum, int numBits) {
 #if defined(USE_32_BIT_MULTIPLICATIONS)
 			return
 				(unsigned)((int)board * (int)magicNum ^ (int)(board >> 32) * (int)(magicNum >> 32)) >> (32 - numBits);
@@ -126,9 +126,9 @@ namespace chess
 		// \param mask: a view mask from bmask or rmask
 		// \index the nth possible
 		// \return the ith possible blocker map
-		Bitmask mapIndex(Bitmask index, Bitmask mask) {
+		Bitmap mapIndex(Bitmap index, Bitmap mask) {
 			// we do this by imagining we map every position of the index num (max 12 bits) to the mask's bits and then return that mask
-			Bitmask result = 0;
+			Bitmap result = 0;
 			Bitmap currentBit;
 			while (index) { // we still have 1 or more bits left
 				currentBit = mask & (~mask + 1);
@@ -139,7 +139,7 @@ namespace chess
 			return result;
 		}
 
-		bool testMagic(Bitmask magic, int numBits, Bitmask blockers[]) {
+		bool testMagic(Bitmap magic, int numBits, Bitmap blockers[]) {
 			bool used[MAX_MAGIC_LOOKUP] = { false };
 			bool failed = false;
 
@@ -154,10 +154,10 @@ namespace chess
 			return !failed;
 		}
 
-		Bitmask findMagic(int sq, int numBits, bool isBishop) {
-			Bitmask mask = isBishop ? bmask(sq) : rmask(sq);
-			Bitmask blockers[MAX_MAGIC_LOOKUP] = { 0ULL };
-			Bitmask attacks[MAX_MAGIC_LOOKUP] = { 0ULL };
+		Bitmap findMagic(int sq, int numBits, bool isBishop) {
+			Bitmap mask = isBishop ? bmask(sq) : rmask(sq);
+			Bitmap blockers[MAX_MAGIC_LOOKUP] = { 0ULL };
+			Bitmap attacks[MAX_MAGIC_LOOKUP] = { 0ULL };
 
 			for (int i = 0; i < (1 << numBits); i++) {
 				blockers[i] = mapIndex(i, mask);
@@ -165,7 +165,7 @@ namespace chess
 			}
 
 			for (int i = 0; i < 10000000; i++) {
-				Bitmask magic = randomMapFewbits();
+				Bitmap magic = randomMapFewbits();
 				// just quickly check that it has moved some bits to the top, purely for efficiency#
 				//if (std::popcount((mask * magic) & 0xff00000000000000) < 3) continue;
 				if (testMagic(magic, numBits, blockers)) return magic;
@@ -197,13 +197,13 @@ namespace chess
 
 		// precomputes all of batt/ratt from a given square
 		// places them in the correct index of a lookup table using magic number
-		std::vector<Bitmask> getLookup(int sq, Bitmask magic, bool isBishop) {
-			Bitmask mask = isBishop ? bmask(sq) : rmask(sq);
+		std::vector<Bitmap> getLookup(int sq, Bitmap magic, bool isBishop) {
+			Bitmap mask = isBishop ? bmask(sq) : rmask(sq);
 			int numBits = isBishop ? bBits[sq] : rBits[sq];
-			std::vector<Bitmask> lookupTable(MAX_MAGIC_LOOKUP, 0ULL);
+			std::vector<Bitmap> lookupTable(MAX_MAGIC_LOOKUP, 0ULL);
 			for (int i = 0; i < (1 << numBits); i++) {
-				Bitmask blockerMask = mapIndex(i, mask);
-				Bitmask attackMask = isBishop ? batt(sq, blockerMask) : ratt(sq, blockerMask);
+				Bitmap blockerMask = mapIndex(i, mask);
+				Bitmap attackMask = isBishop ? batt(sq, blockerMask) : ratt(sq, blockerMask);
 				size_t hashIndex = transform(blockerMask, magic, numBits);
 				lookupTable[hashIndex] = attackMask;
 			}
@@ -239,7 +239,7 @@ namespace chess
 
 
 
-	const Bitmask rMagics[64] = {
+	const Bitmap rMagics[64] = {
 		0x15c00080400020,
 		0x800400008101204,
 		0x402001080100820,
@@ -305,7 +305,7 @@ namespace chess
 		0xa480122040608c6,
 		0x1050208140088047,
 	};
-	const Bitmask bMagics[64] = {
+	const Bitmap bMagics[64] = {
 		0x94808000060408,
 		0x2c902d010021007,
 		0x1020408390423401,
@@ -372,7 +372,7 @@ namespace chess
 		0x22881a000021012,
 	};
 
-	MagicLookup::MagicLookup(): square(0), isBishop(false), mask(0), magic(0), numBits(0), lookup(std::vector<Bitmask>(0)) {}
+	MagicLookup::MagicLookup(): square(0), isBishop(false), mask(0), magic(0), numBits(0), lookup(std::vector<Bitmap>(0)) {}
 
 	MagicLookup::MagicLookup(int sq, bool bshp): square(sq), isBishop(bshp) {
 		magic = isBishop ? bMagics[sq] : rMagics[sq];
@@ -380,8 +380,8 @@ namespace chess
 		numBits = isBishop ? magicGen::bBits[sq] : magicGen::rBits[sq];
 		lookup = magicGen::getLookup(sq, magic, isBishop);
 	}
-	Bitmask MagicLookup::operator[](Bitmask allBoard) {
-		Bitmask blockers = mask & allBoard;
+	Bitmap MagicLookup::operator[](Bitmap allBoard) {
+		Bitmap blockers = mask & allBoard;
 		size_t ind = magicGen::transform(blockers, magic, numBits);
 		return lookup[ind];
 	}

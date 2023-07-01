@@ -19,7 +19,7 @@ const Bitmap leftStartingRooks[2] = { 1ULL << 7, 1ULL << 63 };
 
 void chess::printmap(Bitmap bitmap)
 {
-	Bitmask position = 1ULL<<63;
+	Bitmap position = 1ULL<<63;
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
 			if (position & bitmap) std::cout << '1';
@@ -127,7 +127,7 @@ Board Board::fromFen(std::string fen)
 
 	// getting positions of pieces
 	Bitmap pos[12] { 0ULL };
-	Bitmask position = 1ULL << 63;
+	Bitmap position = 1ULL << 63;
 	for (char c : layout) {
 		if (c == '/') continue;
 		else if ('0' < c && c < '9') position >>= ((int)c - (int)'0');
@@ -170,7 +170,7 @@ Board Board::fromFen(std::string fen)
 
 std::string chess::Board::toString()
 {
-	Bitmask position = 1ULL << 63;
+	Bitmap position = 1ULL << 63;
 	std::string out = "";
 	Colour clr;
 	bool altered;
@@ -198,14 +198,18 @@ void chess::Board::makeMove(Move move) {
 	currentlyAltering.clear();
 	Log newLog(getGameState());
 
-	if (!(bool)(move.start & teamMaps[colour])) {
+	Bitmap start = bitset[move.start()];
+	Bitmap end = bitset[move.end()];
+	Flag flag = move.flag();
+
+	if (!(bool)(start & teamMaps[colour])) {
 		throw std::invalid_argument("Cannot move from an empty square");
 	}
 
 	// search for moved piece
 	Type startPieceType = PAWN;
 	for (Bitmap posMap : positions[colour]) {
-		if (posMap & move.start) {
+		if (posMap & start) {
 			break;
 		}
 		startPieceType++;
@@ -213,36 +217,36 @@ void chess::Board::makeMove(Move move) {
 	
 
 	// move piece
-	switch (move.flag) {
-	case Flag::NONE:       movePieceDefault(move.start, move.end, startPieceType); break;
-	case Flag::EN_PASSANT: movePieceEp(move.start, move.end); break;
-	case Flag::PROMOTION:  movePiecePromotion(move.start, move.end, move.promotionPiece); break;
-	case Flag::CASTLE:     movePieceCastle(move.start, move.end); break;
+	switch (flag) {
+	case Flag::NONE:       movePieceDefault(start, end, startPieceType); break;
+	case Flag::EN_PASSANT: movePieceEp(start, end); break;
+	case Flag::PROMOTION:  movePiecePromotion(start, end, move.promotionPiece()); break;
+	case Flag::CASTLE:     movePieceCastle(start, end); break;
 	}
 
-	bool isCapture = (move.end & teamMaps[1 - colour]);
+	bool isCapture = (end & teamMaps[1 - colour]);
 	if (isCapture) {
 		// search for taken piece
 		Type endPieceType = 0;
 		for (Bitmap posmap : positions[!colour]) {
-			if (posmap & move.end) {
+			if (posmap & end) {
 				break;
 			}
 			endPieceType++;
 		}
-		takePiece(move.end, endPieceType);
+		takePiece(end, endPieceType);
 	}
 
 	
 	// update halfMoves
-	if (!isCapture && move.flag != Flag::EN_PASSANT) {
+	if (!isCapture && flag != Flag::EN_PASSANT) {
 		halfMoves = 0;
 	}
 
 	// update epMap
 	epMap = 0;
 	if (startPieceType == PAWN) {
-		updateEpMap(move.start, move.end);
+		updateEpMap(start, end);
 	}
 
 	// remove castle rights after a king move
@@ -385,5 +389,3 @@ void chess::Board::unmakeMove() {
 void chess::Board::print() {
 	std::cout << toString() << std::endl;
 }
-
-

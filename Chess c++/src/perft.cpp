@@ -22,7 +22,10 @@ using namespace chess;
 Board board;
 Generator generator(board);
 
+
 int perft(int depth, bool printMoves = true) {
+	//MoveList moveList;
+	//delete moveList;
 	std::vector<Move> moves = generator.getLegalMoves();
 	
 	if (depth == 1) return (int)moves.size();
@@ -32,7 +35,7 @@ int perft(int depth, bool printMoves = true) {
 	for (Move move : moves) {
 		board.makeMove(move);
 		
-		int count = perft(depth - 1, false);;
+		int count = perft(depth - 1, false);
 		nodeCount += count;
 
 		if (printMoves) std::cout << move.notate() << ": " << formatCommas(std::to_string(count)) << std::endl;

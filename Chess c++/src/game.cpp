@@ -206,8 +206,8 @@ namespace chess
 	void chess::Game::updateMoveHighlights() {
 		resetMoveHighlights();
 		for (Move& move : currentLegalMoves) {
-			if (move.start & pickedPosition) {
-				display.highlightMap |= move.end;
+			if (move.start() & pickedPosition) {
+				display.highlightMap |= move.end();
 			}
 		}
 	}

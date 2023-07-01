@@ -8,49 +8,41 @@
 namespace chess
 {
 	using Bitmap = uint64_t;  // for piece positions
-	using Bitmask = uint64_t; // for bitmap modifying
 
 	enum class Flag {
-		NONE, PROMOTION, EN_PASSANT, CASTLE
+		NONE=0, PROMOTION=1, EN_PASSANT=2, CASTLE=3
 	};
 
 	static const char columnLetters[9] = "abcdefgh";
 
 	const size_t maxMoveCount = 218; // maximum possible number of moves from any position
 
+
+
+	// move is stored in 16 bits of Move::value
+	// 0-5 start position
+	// 6-11 end position
+	// 12-13 flag
+	// 14-15 piece: knight(0), bishop(1), rook(2), queen(3)
 	struct Move {
 	public:
-		Bitmap start, end;
-		Flag flag;
-		Type promotionPiece;
-
+		int value;
 		bool operator==(Move other);
 
-		Move(Bitmap pStart, Bitmap pEnd);
-		Move(Bitmap pStart, Bitmap pEnd, Flag flag, Type pPiece);
+		Move(int pStart, int pEnd);
+		Move(int pStart, int pEnd, Flag flag, Type pPiece);
 		Move();
-		static Move promotion(Bitmap pStart, Bitmap pEnd, Type pPiece);
-		static Move enPassant(Bitmap pStart, Bitmap pEnd);
-		static Move castle(Bitmap pStart, Bitmap pEnd);
+		static Move promotion(int pStart, int pEnd, Type pPiece);
+		static Move enPassant(int pStart, int pEnd);
+		static Move castle(int pStart, int pEnd);
+
+		int start();
+		int end();
+		Flag flag();
+		Type promotionPiece();
 
 		std::string notate();
-
 	};
 
-	struct MoveList {
-	public:
-		using iterator = Move*;
-		MoveList();
-
-		void add(const Move& move);
-
-		iterator begin();
-		iterator end();
-
-		size_t size();
-		void clear();
-	private:
-		Move moves[maxMoveCount];
-		size_t count;
-	};
+	
 }

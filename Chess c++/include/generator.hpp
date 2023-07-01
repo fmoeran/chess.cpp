@@ -23,13 +23,13 @@ namespace chess
 		std::vector<Move> moves;
 		
 		// every position that is either an enemy or empty
-		Bitmask enemyEmptyMask;
+		Bitmap enemyEmptyMask;
 		// positions of every piece that is currently checking the king
-		Bitmask checkMask;
+		Bitmap checkMask;
 		// positions of every attacked position by the enemy
-		Bitmask attackMask;
+		Bitmap attackMask;
 		// the positions every piece can move to whilst not opening a pin
-		Bitmask pinMasks[64];
+		Bitmap pinMasks[64];
 
 		void loadEnemyEmptyMask();
 		void loadCheckMask();
@@ -53,12 +53,32 @@ namespace chess
 		void addEnPassantMoves();
 
 		// return bitmasks of all the pseudo legal move positions from an integer position
-		Bitmask pseudoPawn(int pos);
-		Bitmask pseudoKnight(int pos);
-		Bitmask pseudoBishop(int pos);
-		Bitmask pseudoRook(int pos);
-		Bitmask pseudoQueen(int pos);
-		Bitmask pseudoKing(int pos);
+		Bitmap pseudoPawn(int pos);
+		Bitmap pseudoKnight(int pos);
+		Bitmap pseudoBishop(int pos);
+		Bitmap pseudoRook(int pos);
+		Bitmap pseudoQueen(int pos);
+		Bitmap pseudoKing(int pos);
 	};
+
+	/*
+	struct MoveList {
+	public:
+		using iterator = Move*;
+		MoveList();
+		MoveList(Generator* generator);
+
+		void add(const Move& move);
+
+		iterator begin();
+		iterator end();
+
+		size_t size();
+		void clear();
+	private:
+		Move moves[maxMoveCount], * last;
+	};
+	*/
+	
 
 }

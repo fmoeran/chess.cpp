@@ -158,12 +158,11 @@
   <ItemGroup>
     <ClCompile Include="src\bitboard.cpp" />
     <ClCompile Include="src\display.cpp" />
+    <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\generator.cpp" />
     <ClCompile Include="src\magics.cpp" />
     <ClCompile Include="src\move.cpp" />
-    <ClCompile Include="src\perft.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">perft.cpp</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\perft.cpp" />
     <ClCompile Include="src\pieces.cpp" />
   </ItemGroup>
   <ItemGroup>

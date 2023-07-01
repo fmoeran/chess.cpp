@@ -11,29 +11,29 @@
 
 namespace chess
 {
-	const Bitmask pawnEndRows[2] = { 0xffULL << 48, 0xffULL << 8 };
-	const Bitmask pawnDoubleStepRows[2] = { 0xffULL << 16, 0xffULL << 40 };
+	const Bitmap pawnEndRows[2] = { 0xffULL << 48, 0xffULL << 8 };
+	const Bitmap pawnDoubleStepRows[2] = { 0xffULL << 16, 0xffULL << 40 };
 	const int pawnStepSizes[2] = { 8, -8 };
 
 	// defined at bottom
-	void loadPawnPseudoPushMoves(Bitmask arr[2][64]);
+	void loadPawnPseudoPushMoves(Bitmap arr[2][64]);
 
-	void loadPawnPseudoAttackMoves(Bitmask arr[2][64]);
+	void loadPawnPseudoAttackMoves(Bitmap arr[2][64]);
 
-	void loadKnightPseudoMoves(Bitmask arr[64]);
+	void loadKnightPseudoMoves(Bitmap arr[64]);
 
 	void loadBishopPseudoMoves(MagicLookup arr[64]);
 
 	void loadRookPseudoMoves(MagicLookup arr[64]);
 
-	void loadKingPseudoMoves(Bitmask arr[64]);
+	void loadKingPseudoMoves(Bitmap arr[64]);
 
-	Bitmask pawnPushLookup[2][64];
-	Bitmask pawnAttackLookup[2][64];
-	Bitmask knightPseudoLookup[64];
+	Bitmap pawnPushLookup[2][64];
+	Bitmap pawnAttackLookup[2][64];
+	Bitmap knightPseudoLookup[64];
 	MagicLookup bishopPseudoLookup[64];
 	MagicLookup rookPseudoLookup[64];
-	Bitmask kingPseudoLookup[64];
+	Bitmap kingPseudoLookup[64];
 	
 
 	struct Startup {
@@ -106,7 +106,7 @@ namespace chess
 		board->positions[board->colour][KING] = 0ULL;
 		board->all ^= teamKingMap;
 
-		Bitmask result = 0ULL;
+		Bitmap result = 0ULL;
 
 		Bitmap pawnMap = board->positions[1 - board->colour][PAWN];
 		while (pawnMap) {
@@ -160,21 +160,21 @@ namespace chess
 		Bitmap startMap = bitset[position];
 		while (map) {
 			Bitmap endMap = map & (~map+1);
-			Move move = Move(startMap, endMap, flag, promotionPiece);
-			moves.emplace_back(move);
+			Move move = Move(getSinglePosition(startMap), getSinglePosition(endMap), flag, promotionPiece);
+			moves.push_back(move);
 			map = map & (map - 1);
 		}
 	}
 
 	void Generator::addPawnMoves() {
 		Bitmap posMap = board->positions[board->colour][PAWN];
-		Bitmask endRow = pawnEndRows[board->colour];
+		Bitmap endRow = pawnEndRows[board->colour];
 		posMap &= ~endRow;  // pawns on the end row  are dealt with in addPromotionMoves()
 		while (posMap) {
 			int position = getNextPosition(posMap);
-			Bitmask pseudoMoves = pseudoPawn(position);
-			Bitmask pinMask = pinMasks[position];
-			Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+			Bitmap pseudoMoves = pseudoPawn(position);
+			Bitmap pinMask = pinMasks[position];
+			Bitmap legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
 			addMoves(position, legalMoves, Flag::NONE, PAWN);
 		}
 	}
@@ -183,9 +183,9 @@ namespace chess
 		Bitmap posMap = board->positions[board->colour][KNIGHT];
 		while (posMap) {
 			int position = getNextPosition(posMap);
-			Bitmask pseudoMoves = knightPseudoLookup[position];
-			Bitmask pinMask = pinMasks[position];
-			Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+			Bitmap pseudoMoves = knightPseudoLookup[position];
+			Bitmap pinMask = pinMasks[position];
+			Bitmap legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
 			addMoves(position, legalMoves, Flag::NONE, PAWN);
 		}
 	}
@@ -194,9 +194,9 @@ namespace chess
 		Bitmap posMap = board->positions[board->colour][BISHOP];
 		while (posMap) {
 			int position = getNextPosition(posMap);
-			Bitmask pseudoMoves = pseudoBishop(position);
-			Bitmask pinMask = pinMasks[position];
-			Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+			Bitmap pseudoMoves = pseudoBishop(position);
+			Bitmap pinMask = pinMasks[position];
+			Bitmap legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
 			addMoves(position, legalMoves, Flag::NONE, PAWN);
 		}
 	}
@@ -205,9 +205,9 @@ namespace chess
 		Bitmap posMap = board->positions[board->colour][ROOK];
 		while (posMap) {
 			int position = getNextPosition(posMap);
-			Bitmask pseudoMoves = pseudoRook(position);
-			Bitmask pinMask = pinMasks[position];
-			Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+			Bitmap pseudoMoves = pseudoRook(position);
+			Bitmap pinMask = pinMasks[position];
+			Bitmap legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
 			addMoves(position, legalMoves, Flag::NONE, PAWN);
 			
 		}
@@ -217,18 +217,18 @@ namespace chess
 		Bitmap posMap = board->positions[board->colour][QUEEN];
 		while (posMap) {
 			int position = getNextPosition(posMap);
-			Bitmask pseudoMoves = pseudoQueen(position);
-			Bitmask pinMask = pinMasks[position];
-			Bitmask legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+			Bitmap pseudoMoves = pseudoQueen(position);
+			Bitmap pinMask = pinMasks[position];
+			Bitmap legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
 			addMoves(position, legalMoves, Flag::NONE, PAWN);
 		}
 	}
 	
 	void Generator::addKingMoves() {
 		int position = getSinglePosition(board->positions[board->colour][KING]);
-		Bitmask pseudoMoves = pseudoKing(position);
-		Bitmask pinMask = pinMasks[position];
-		Bitmask legalMoves = pseudoMoves & ~attackMask & enemyEmptyMask;
+		Bitmap pseudoMoves = pseudoKing(position);
+		Bitmap pinMask = pinMasks[position];
+		Bitmap legalMoves = pseudoMoves & ~attackMask & enemyEmptyMask;
 		addMoves(position, legalMoves, Flag::NONE, PAWN);
 	}
 
@@ -238,38 +238,38 @@ namespace chess
 
 	void Generator::addEnPassantMoves() {}
 
-	Bitmask Generator::pseudoPawn(int pos) {
-		Bitmask nall = ~board->all;
-		Bitmask forwardMap = pawnPushLookup[board->colour][pos];
+	Bitmap Generator::pseudoPawn(int pos) {
+		Bitmap nall = ~board->all;
+		Bitmap forwardMap = pawnPushLookup[board->colour][pos];
 		forwardMap &= nall;  // can't step on another piece
 
 		if (forwardMap & pawnDoubleStepRows[board->colour]) {
 			forwardMap |= pawnPushLookup[board->colour][pos + pawnStepSizes[board->colour]] & nall;
 		}
 		
-		Bitmask attackMap = pawnAttackLookup[board->colour][pos] & board->all;
+		Bitmap attackMap = pawnAttackLookup[board->colour][pos] & board->all;
 
 		return forwardMap | attackMap;
 	}
 
-	Bitmask Generator::pseudoKnight(int pos) { 
+	Bitmap Generator::pseudoKnight(int pos) { 
 		return knightPseudoLookup[pos];
 	}
 
-	Bitmask Generator::pseudoBishop(int pos) { 
+	Bitmap Generator::pseudoBishop(int pos) { 
 		return bishopPseudoLookup[pos][board->all];
 	}
-	Bitmask Generator::pseudoRook(int pos) { 
+	Bitmap Generator::pseudoRook(int pos) { 
 		return rookPseudoLookup[pos][board->all];
 	}
-	Bitmask Generator::pseudoQueen(int pos) { 
+	Bitmap Generator::pseudoQueen(int pos) { 
 		return pseudoBishop(pos) | pseudoRook(pos);
 	}
-	Bitmask Generator::pseudoKing(int pos) { 
+	Bitmap Generator::pseudoKing(int pos) { 
 		return kingPseudoLookup[pos];
 	}
 
-	void loadPawnPseudoPushMoves(Bitmask arr[2][64]) {
+	void loadPawnPseudoPushMoves(Bitmap arr[2][64]) {
 		for (int pos = 0; pos < 64; pos++) {
 			Bitmap posMap = bitset[pos];
 			arr[WHITE][pos] = posMap << 8;
@@ -277,11 +277,11 @@ namespace chess
 		}
 	}
 
-	void loadPawnPseudoAttackMoves(Bitmask arr[2][64]) {
+	void loadPawnPseudoAttackMoves(Bitmap arr[2][64]) {
 		for (int pos = 0; pos < 64; pos++) {
 			int col = 7 - pos % 8; // a=0 ... h=7
 			Bitmap posMap = bitset[pos];
-			Bitmask whiteMask = 0, blackMask = 0;
+			Bitmap whiteMask = 0, blackMask = 0;
 			if (col != 7) { // not far right
 				whiteMask |= posMap << 7;
 				blackMask |= posMap >> 9;
@@ -295,9 +295,9 @@ namespace chess
 		}
 	}
 
-	void loadKnightPseudoMoves(Bitmask arr[64]) {
+	void loadKnightPseudoMoves(Bitmap arr[64]) {
 		for (int pos = 0; pos < 64; pos++) {
-			Bitmask neighbours = 0ULL;
+			Bitmap neighbours = 0ULL;
 			int row = 7 - pos / 8, col =7 - pos % 8;
 			if (row < 7) { // not on bottom row
 				if (col < 6) neighbours |= bitset[pos - 10];
@@ -331,7 +331,7 @@ namespace chess
 		}
 	}
 
-	void loadKingPseudoMoves(Bitmask arr[64]) {
+	void loadKingPseudoMoves(Bitmap arr[64]) {
 		for (int pos = 0; pos < 64; pos++) {
 			int row = pos / 8, col = 7 - pos % 8;
 			Bitmap neighbours = 0ULL;
@@ -351,5 +351,7 @@ namespace chess
 			arr[pos] = neighbours;
 		}
 	}
+
+	
 }
 	
