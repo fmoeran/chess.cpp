@@ -46,7 +46,7 @@ int perft(int depth, bool printMoves = true) {
 int main() {
 	auto t0 = std::chrono::high_resolution_clock::now();
 
-	int depth = 6;
+	int depth = 4;
 	int nodes = perft(depth);
 	auto t1 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);

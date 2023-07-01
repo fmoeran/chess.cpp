@@ -14,6 +14,7 @@ namespace chess
 	const Bitmap pawnEndRows[2] = { 0xffULL << 48, 0xffULL << 8 };
 	const Bitmap pawnDoubleStepRows[2] = { 0xffULL << 16, 0xffULL << 40 };
 	const int pawnStepSizes[2] = { 8, -8 };
+	const Bitmap AFile = 0x8080808080808080;
 
 	// defined at bottom
 	void loadPawnPseudoPushMoves(Bitmap arr[2][64]);
@@ -76,7 +77,6 @@ namespace chess
 		loadCheckMask();
 		loadAttackMask();
 		loadPinMasks();
-
 		addPawnMoves();
 		
 		addKnightMoves();
@@ -86,6 +86,7 @@ namespace chess
 		addKingMoves();
 		//addCastleMoves();
 		//addPromotionMoves();
+		// TODO implement en passant
 		//addEnPassantMoves();
 	}
 
@@ -95,6 +96,59 @@ namespace chess
 
 	void Generator::loadCheckMask() {
 		checkMask = ~0ULL;
+
+		bool alreadyChecked = false;
+
+		int kingPos = getSinglePosition(board->positions[board->colour][KING]);
+
+		Bitmap* enemies = board->positions[1 - board->colour];
+
+		// knights
+		Bitmap knightMap = pseudoKnight(kingPos) & enemies[KNIGHT];
+		int numKnights = std::popcount(knightMap);
+		if (numKnights >= 2) {
+			checkMask = 0;
+			return;
+		}
+		else if (numKnights == 1) {
+			checkMask &= knightMap;
+			alreadyChecked = true;
+		}
+		
+		// pawns
+		Bitmap pawnMap = pawnAttackLookup[board->colour][kingPos] & enemies[PAWN];
+		int numPawns = std::popcount(pawnMap);
+		if ((numPawns + alreadyChecked) >= 2) {
+			checkMask = 0;
+			return;
+		}
+		else if (numPawns == 1) {
+			checkMask &= pawnMap;
+			alreadyChecked = true;
+		}
+		
+		// rooks
+		Bitmap rookMap = pseudoRook(kingPos) & (enemies[ROOK] | enemies[QUEEN]);
+		int numRooks = std::popcount(rookMap);
+		if ((numRooks + alreadyChecked) >= 2) {
+			checkMask = 0;
+			return;
+		}
+		else if (numRooks == 1) {
+			int rookPos = getSinglePosition(rookMap);
+			checkMask &= (pseudoRook(kingPos) & pseudoRook(rookPos)) | rookMap;
+		}
+		// bishops
+		Bitmap bishopMap = pseudoBishop(kingPos) & (enemies[BISHOP] | enemies[QUEEN]);
+		int numBishops = std::popcount(bishopMap);
+		if ((numBishops + alreadyChecked) >= 2) {
+			checkMask = 0;
+			return;
+		}
+		else if (numBishops == 1) {
+			int bishopPos = getSinglePosition(bishopMap);
+			checkMask &= (pseudoRook(kingPos) & pseudoRook(bishopPos)) | bishopMap;
+		}
 	}
 
 	void Generator::loadAttackMask() {
@@ -150,8 +204,41 @@ namespace chess
 		for (int position = 0; position < 64; position++) {
 			pinMasks[position] = ~0ULL;
 		}
-	}
+		
+		int kingPos = getSinglePosition(board->positions[board->colour][KING]);
 
+		Bitmap rookMap = board->positions[1 - board->colour][ROOK];
+		Bitmap bishopMap = board->positions[1 - board->colour][BISHOP];
+		Bitmap queenMap = board->positions[1 - board->colour][QUEEN];
+
+		Bitmap rookPseudo = rookPseudoLookup[kingPos][board->all];
+		Bitmap teamRookPseudo = rookPseudo & board->teamMaps[board->colour];
+		while (teamRookPseudo) {
+			Bitmap posMap = teamRookPseudo & (~teamRookPseudo + 1);
+			teamRookPseudo &= teamRookPseudo - 1;
+
+			Bitmap newRookPseudo = rookPseudoLookup[kingPos][board->all ^ posMap];
+			if (newRookPseudo & (rookMap | queenMap) & ~rookPseudo) {
+				int pos = getSinglePosition(posMap);
+				Bitmap newPositionPseudo = rookPseudoLookup[pos][board->all];
+				pinMasks[pos] &= newPositionPseudo & newRookPseudo;
+			}
+		}
+
+		Bitmap bishopPseudo = bishopPseudoLookup[kingPos][board->all];
+		Bitmap teamBishopPseudo = bishopPseudo & board->teamMaps[board->colour];
+		while (teamBishopPseudo) {
+			Bitmap posMap = teamBishopPseudo & (~teamBishopPseudo + 1);
+			teamBishopPseudo &= teamBishopPseudo - 1;
+
+			Bitmap newBishopPseudo = bishopPseudoLookup[kingPos][board->all ^ posMap];
+			if (newBishopPseudo & (bishopMap | queenMap) & ~bishopPseudo) {
+				int pos = getSinglePosition(posMap);
+				Bitmap newPositionPseudo = bishopPseudoLookup[pos][board->all];
+				pinMasks[pos] &= newPositionPseudo & newBishopPseudo;
+			}
+		}
+	}
 
 	void Generator::addMoves(int position, Bitmap map, Flag flag, Type promotionPiece) {
 		Bitmap startMap = bitset[position];
@@ -234,7 +321,18 @@ namespace chess
 
 	void Generator::addPromotionMoves() {}
 
-	void Generator::addEnPassantMoves() {}
+	void Generator::addEnPassantMoves() {
+		Bitmap startMap;
+		if (board->colour == WHITE) {
+			startMap |= (board->epMap & ~(AFile >> 7)) >> 9;
+			startMap |= (board->epMap & ~(AFile)) >> 7;
+		} else {
+			startMap |= (board->epMap & ~(AFile >> 7)) << 7;
+			startMap |= (board->epMap & ~(AFile)) << 9;
+		}
+		startMap &= board->teamMaps[board->colour];
+
+	}
 
 	Bitmap Generator::pseudoPawn(int pos) {
 		Bitmap nall = ~board->all;

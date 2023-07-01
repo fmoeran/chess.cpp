@@ -30,10 +30,10 @@
     <ClCompile Include="src\magics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\perft.cpp">
+    <ClCompile Include="src\display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\display.cpp">
+    <ClCompile Include="src\perft.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
