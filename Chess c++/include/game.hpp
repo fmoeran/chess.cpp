@@ -36,10 +36,10 @@ namespace chess
 		// the current piece the player is holding
 		Piece holding;
 		bool isHolding;
-		Bitmap pickedPosition;  // where holding was picked from
+		int pickedPosition;  // where holding was picked from
 
 		// holds all the current legal moves for the current moving player
-		std::vector<Move> currentLegalMoves;
+		MoveList currentLegalMoves;
 
 		// handles input from user each frame
 		void handleEvents();
@@ -49,7 +49,7 @@ namespace chess
 		void updateCurrentMoves();
 		// returns a legal Move class from a pickup and drop position
 		// this requires currentLegalMoves to be updated
-		Move generateMove(Bitmap start, Bitmap end);
+		Move generateMove(int start, int end);
 		// attempts to move a piece through board.makeMove
 		// if move is illegal it will throw an exception
 		void movePiece(Move move);
@@ -57,7 +57,7 @@ namespace chess
 		void updateMoveHighlights();
 		void resetMoveHighlights();
 		// activates holding, isHolding, pickedPosition
-		void grabPosition(Bitmap posmap);
+		void grabPosition(int pos);
 		// places holding
 		void placeHolding(Bitmap posmap);
 

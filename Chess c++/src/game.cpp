@@ -11,6 +11,7 @@ namespace chess
 	chess::Game::Game(sf::RenderWindow& window, float size, bool whiteAI, bool blackAI, bool debug, sf::Vector2f coords) {
 		display = BoardDisplay(window, size, debug, coords);
 		generator = Generator(board);
+		currentLegalMoves = MoveList();
 
 		whiteIsAI = whiteAI;
 		blackIsAI = blackAI;
@@ -125,19 +126,19 @@ namespace chess
 	}
 
 	void chess::Game::updateCurrentMoves() {
-		currentLegalMoves = generator.getLegalMoves();
+		currentLegalMoves = MoveList(generator);
 
 	}
 
-	void chess::Game::grabPosition(Bitmap posmap) {
-
+	void chess::Game::grabPosition(int pos) {
+		Bitmap posmap = bitset[pos];
 		// no friendly piece on that square
 		if ((posmap & board.teamMaps[board.colour]) == 0) return;
 
 		for (Type type = PAWN; type <= KING; type++) {
 			if (board.positions[board.colour][type] & posmap) {
 				holding = Piece(type, board.colour);
-				pickedPosition = posmap;
+				pickedPosition = pos;
 				isHolding = true;
 				updateMoveHighlights();
 				return;
@@ -163,9 +164,9 @@ namespace chess
 		return std::find(currentLegalMoves.begin(), currentLegalMoves.end(), move) != currentLegalMoves.end();
 	}
 
-	Move chess::Game::generateMove(Bitmap start, Bitmap end) {
+	Move chess::Game::generateMove(int start, int end) {
 		// default move
-		Move move(start, end);
+		Move move = makeMove(start, end);
 
 		if (moveIsLegal(move)) {
 			return move;
@@ -173,7 +174,7 @@ namespace chess
 
 		// castle
 		if (start & board.positions[board.colour][KING]) {
-			move = Move::castle(start, end);
+			move = makeCastle(start, end);
 			if (moveIsLegal(move)) {
 				return move;
 			}
@@ -181,19 +182,19 @@ namespace chess
 		// pawn
 		if (start & board.positions[board.colour][PAWN]) {
 			// en passant
-			move = Move::enPassant(start, end);
+			move = makeEnPassant(start, end);
 			if (moveIsLegal(move)) {
 				return move;
 			}
 			// promotion
-			move = Move::promotion(start, end, QUEEN);
+			move = makePromotion(start, end, QUEEN);
 			if (moveIsLegal(move)) {
 				Piece promotionPiece = display.askUserForPromotionpiece(board.colour);
-				return Move::promotion(start, end, promotionPiece.type);
+				return makePromotion(start, end, promotionPiece.type);
 			}
 		}
 
-		return Move(start, end); // will be illegal
+		return makeMove(start, end); // will be illegal
 	}
 
 	void chess::Game::movePiece(Move move) {
@@ -206,8 +207,8 @@ namespace chess
 	void chess::Game::updateMoveHighlights() {
 		resetMoveHighlights();
 		for (Move& move : currentLegalMoves) {
-			if (move.start() & pickedPosition) {
-				display.highlightMap |= move.end();
+			if (getStart(move) == pickedPosition) {
+				display.highlightMap |= bitset[getEnd(move)];
 			}
 		}
 	}
@@ -217,8 +218,10 @@ namespace chess
 	}
 }
 
-/*int main() {
+int main() {
+	using namespace chess;
 	Game game;
 	
 	Result res = game.run();
-}*/
+	
+}

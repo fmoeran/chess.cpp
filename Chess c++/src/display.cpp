@@ -74,7 +74,7 @@ void chess::BoardDisplay::updateScreen(Board& board) {
     window->display();
 }
 
-void chess::BoardDisplay::updateScreen(Board& board, Piece holding, Bitmap pickedPosition){
+void chess::BoardDisplay::updateScreen(Board& board, Piece holding, int pickedPosition){
     window->clear();
 
     displaySquares();
@@ -125,9 +125,8 @@ void chess::BoardDisplay::displayPieces(Board& board) {
     }
 }
 
-void chess::BoardDisplay::displayHolding(Piece holding, Bitmap pickedPosition) {
-    int intPos = getSinglePosition(pickedPosition);
-    displaySquare(63 - intPos);
+void chess::BoardDisplay::displayHolding(Piece holding, int pickedPosition) {
+    displaySquare(63 - pickedPosition);
     sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
     sf::Sprite sprite(pieceTextures[holding.getId()]);
 
@@ -188,10 +187,10 @@ Piece chess::BoardDisplay::askUserForPromotionpiece(Colour colour)
     return Piece(QUEEN, colour);
 }
 
-Bitmap chess::BoardDisplay::getMousePosition() {
+int chess::BoardDisplay::getMousePosition() {
     sf::Vector2i position = sf::Mouse::getPosition(*window);
     int row = (position.y - (int)boardPosition.y) / squareSize;
     int col = (position.x - (int)boardPosition.x) / squareSize;
     int intPos = row * 8 + col;
-    return bitset[63 - intPos];
+    return 63 - intPos;
 }

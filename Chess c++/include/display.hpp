@@ -19,11 +19,11 @@ namespace chess
 		~BoardDisplay();
 
 		void updateScreen(Board& board);
-		void updateScreen(Board& board, Piece holding, Bitmap pickedPosition);
+		void updateScreen(Board& board, Piece holding, int pickedPosition);
 
 		// retrieves the bitmap position of the current mouse position
 		// mouse must be on the board for this to work
-		Bitmap getMousePosition();
+		int getMousePosition();
 
 		bool mouseIsOnBoard();
 
@@ -81,7 +81,7 @@ namespace chess
 		// displays all possible moves using highlightPositions
 		void displayMoves();
 		// displays the current held piece that was picked up from pickedPosition
-		void displayHolding(Piece holding, Bitmap pickedPosition);
+		void displayHolding(Piece holding, int pickedPosition);
 		// retrieves the board row and col from a pixel coordinate
 		void getMousePosition(sf::Vector2f coord);
 		// displays all the pieces in a given board

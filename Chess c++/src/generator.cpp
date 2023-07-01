@@ -78,6 +78,7 @@ namespace chess
 		loadPinMasks();
 
 		addPawnMoves();
+		
 		addKnightMoves();
 		addBishopMoves();
 		addRookMoves();
@@ -171,6 +172,7 @@ namespace chess
 			Bitmap pseudoMoves = pseudoPawn(position);
 			Bitmap pinMask = pinMasks[position];
 			Bitmap legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+			
 			addMoves(position, legalMoves, Flag::NONE, PAWN);
 		}
 	}
@@ -348,9 +350,9 @@ namespace chess
 		}
 	}
 
-	/*MoveList::MoveList() {
+	MoveList::MoveList() {
 		count = 0u;
-	}*/
+	}
 
 	MoveList::MoveList(Generator& generator) {
 		count = 0;

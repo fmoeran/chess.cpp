@@ -5,6 +5,7 @@ namespace chess
 {
 	// takes either knight, bishop, rook, queen and squashes it to the first 2 bits
 	int pieceToPromotionCode(Type piece) {
+		if (piece < 1) return 0;
 		return piece - 1;
 	}
 
@@ -51,7 +52,7 @@ namespace chess
 	std::string notate(Move move)
 	{
 		int startPos = getStart(move);
-		int endPos = getStart(move);
+		int endPos = getEnd(move);
 		std::string starting = std::string({ columnLetters[7 - startPos % 8], (char)(startPos / 8 + 1 + '0') });
 		std::string ending = std::string({ columnLetters[7 - endPos % 8], (char)(endPos / 8 + 1 + '0') });
 		std::string promotion = "";

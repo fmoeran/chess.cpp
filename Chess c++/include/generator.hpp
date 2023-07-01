@@ -67,7 +67,7 @@ namespace chess
 	struct MoveList {
 	public:
 		using iterator = Move*;
-		//MoveList();
+		MoveList();
 		MoveList(Generator& generator);
 
 		void add(Move move);
