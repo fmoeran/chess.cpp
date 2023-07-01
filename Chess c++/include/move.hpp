@@ -24,7 +24,24 @@ namespace chess
 	// 6-11 end position
 	// 12-13 flag
 	// 14-15 piece: knight(0), bishop(1), rook(2), queen(3)
-	struct Move {
+	using Move = int;
+
+	Move makeMove(int start, int end);
+	Move makeMove(int start, int end, Flag flag, Type promotion);
+
+	Move makePromotion(int start, int end, Type piece);
+	Move makeEnPassant(int start, int end);
+	Move makeCastle(int start, int end);
+
+	int getStart(Move move);
+	int getEnd(Move move);
+	Flag getFlag(Move move);
+	Type getPromotion(Move move);
+
+	std::string notate(Move move);
+
+	
+	/*struct Move {
 	public:
 		int value;
 		bool operator==(Move other);
@@ -42,7 +59,6 @@ namespace chess
 		Type promotionPiece();
 
 		std::string notate();
-	};
+	};*/
 
-	
 }

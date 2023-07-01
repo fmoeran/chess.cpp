@@ -51,6 +51,7 @@ namespace chess
 
 	Generator::Generator() {
 		board = nullptr;
+		moves = nullptr;
 		enemyEmptyMask = 0ULL;
 		checkMask = 0ULL;
 		attackMask = 0ULL;
@@ -58,19 +59,18 @@ namespace chess
 	}
 	Generator::Generator(Board& pboard) {
 		board = &pboard;
+		moves = nullptr;
 		enemyEmptyMask = 0ULL;
 		checkMask = 0ULL;
 		attackMask = 0ULL;
 		std::fill(pinMasks, pinMasks + 64, 0ULL);
 	}
 
-	std::vector<Move> Generator::getLegalMoves() {
+	void Generator::getLegalMoves(MoveList* moveList) {
 		assert(board);
-
-		moves.clear();
-		//moves.reserve(maxMoveCount);
+		moves = moveList;
 		
-		if (!board->positions[board->colour][KING]) return moves;
+		if (!board->positions[board->colour][KING]) return;
 
 		loadEnemyEmptyMask();
 		loadCheckMask();
@@ -86,10 +86,6 @@ namespace chess
 		//addCastleMoves();
 		//addPromotionMoves();
 		//addEnPassantMoves();
-
-		//moves.shrink_to_fit();
-
-		return moves;
 	}
 
 	void Generator::loadEnemyEmptyMask() {
@@ -160,8 +156,8 @@ namespace chess
 		Bitmap startMap = bitset[position];
 		while (map) {
 			Bitmap endMap = map & (~map+1);
-			Move move = Move(getSinglePosition(startMap), getSinglePosition(endMap), flag, promotionPiece);
-			moves.push_back(move);
+			Move move = makeMove(getSinglePosition(startMap), getSinglePosition(endMap), flag, promotionPiece);
+			moves->add(move);
 			map = map & (map - 1);
 		}
 	}
@@ -352,6 +348,34 @@ namespace chess
 		}
 	}
 
-	
+	/*MoveList::MoveList() {
+		count = 0u;
+	}*/
+
+	MoveList::MoveList(Generator& generator) {
+		count = 0;
+		generator.getLegalMoves(this);
+	}
+
+	void MoveList::add(Move move) {
+		moves[count] = move;
+		count++;
+	}
+
+	MoveList::iterator MoveList::begin() {
+		return moves;
+	}
+
+	MoveList::iterator MoveList::end() {
+		return &moves[count];
+	}
+
+	size_t MoveList::size() {
+		return count;
+	}
+
+	void MoveList::clear() {
+		count = 0;
+	}
 }
 	

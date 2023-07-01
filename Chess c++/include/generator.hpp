@@ -10,17 +10,19 @@
 
 namespace chess
 {
+	struct MoveList;
+
 	class Generator {
 	public:
 		Generator();
 		Generator(Board& pboard);
 
 
-		std::vector<Move> getLegalMoves();
+		void getLegalMoves(MoveList* moveList);
 		Board* board;
 		
 	private:
-		std::vector<Move> moves;
+		MoveList* moves;
 		
 		// every position that is either an enemy or empty
 		Bitmap enemyEmptyMask;
@@ -61,14 +63,14 @@ namespace chess
 		Bitmap pseudoKing(int pos);
 	};
 
-	/*
+	
 	struct MoveList {
 	public:
 		using iterator = Move*;
-		MoveList();
-		MoveList(Generator* generator);
+		//MoveList();
+		MoveList(Generator& generator);
 
-		void add(const Move& move);
+		void add(Move move);
 
 		iterator begin();
 		iterator end();
@@ -76,9 +78,10 @@ namespace chess
 		size_t size();
 		void clear();
 	private:
-		Move moves[maxMoveCount], * last;
+		Move moves[maxMoveCount];
+		size_t count;
 	};
-	*/
+	
 	
 
 }

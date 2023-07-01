@@ -26,19 +26,17 @@ Generator generator(board);
 int perft(int depth, bool printMoves = true) {
 	//MoveList moveList;
 	//delete moveList;
-	std::vector<Move> moves = generator.getLegalMoves();
-	
-	if (depth == 1) return (int)moves.size();
+	if (depth == 1) return (int)MoveList(generator).size();
 	
 	int nodeCount = 0;
 	
-	for (Move move : moves) {
+	for (Move move : MoveList(generator)) {
 		board.makeMove(move);
 		
 		int count = perft(depth - 1, false);
 		nodeCount += count;
 
-		if (printMoves) std::cout << move.notate() << ": " << formatCommas(std::to_string(count)) << std::endl;
+		if (printMoves) std::cout << notate(move) << ": " << formatCommas(std::to_string(count)) << std::endl;
 
 		board.unmakeMove();
 	}

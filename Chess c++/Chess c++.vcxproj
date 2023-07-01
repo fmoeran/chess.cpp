@@ -158,7 +158,6 @@
   <ItemGroup>
     <ClCompile Include="src\bitboard.cpp" />
     <ClCompile Include="src\display.cpp" />
-    <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\generator.cpp" />
     <ClCompile Include="src\magics.cpp" />
     <ClCompile Include="src\move.cpp" />

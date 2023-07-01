@@ -198,9 +198,9 @@ void chess::Board::makeMove(Move move) {
 	currentlyAltering.clear();
 	Log newLog(getGameState());
 
-	Bitmap start = bitset[move.start()];
-	Bitmap end = bitset[move.end()];
-	Flag flag = move.flag();
+	Bitmap start = bitset[getStart(move)];
+	Bitmap end = bitset[getEnd(move)];
+	Flag flag = getFlag(move);
 
 	if (!(bool)(start & teamMaps[colour])) {
 		throw std::invalid_argument("Cannot move from an empty square");
@@ -220,7 +220,7 @@ void chess::Board::makeMove(Move move) {
 	switch (flag) {
 	case Flag::NONE:       movePieceDefault(start, end, startPieceType); break;
 	case Flag::EN_PASSANT: movePieceEp(start, end); break;
-	case Flag::PROMOTION:  movePiecePromotion(start, end, move.promotionPiece()); break;
+	case Flag::PROMOTION:  movePiecePromotion(start, end, getPromotion(move)); break;
 	case Flag::CASTLE:     movePieceCastle(start, end); break;
 	}
 
