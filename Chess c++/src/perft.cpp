@@ -19,6 +19,8 @@ std::string formatCommas(std::string s) {
 
 using namespace chess;
 
+std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 Board board;
 Generator generator(board);
 
@@ -46,7 +48,8 @@ int perft(int depth, bool printMoves = true) {
 int main() {
 	auto t0 = std::chrono::high_resolution_clock::now();
 
-	int depth = 4;
+	int depth = 6;
+	board = Board::fromFen(fen);
 	int nodes = perft(depth);
 	auto t1 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);

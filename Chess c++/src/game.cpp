@@ -54,7 +54,8 @@ namespace chess
 			if (isHolding) display.updateScreen(board, holding, pickedPosition);
 			else display.updateScreen(board);
 
-			move();
+			bool ended = move();
+			if (ended) break;
 		}
 
 

@@ -77,8 +77,8 @@ namespace chess
 		loadCheckMask();
 		loadAttackMask();
 		loadPinMasks();
+
 		addPawnMoves();
-		
 		addKnightMoves();
 		addBishopMoves();
 		addRookMoves();
@@ -86,8 +86,7 @@ namespace chess
 		addKingMoves();
 		//addCastleMoves();
 		//addPromotionMoves();
-		// TODO implement en passant
-		//addEnPassantMoves();
+		addEnPassantMoves();
 	}
 
 	void Generator::loadEnemyEmptyMask() {
@@ -147,7 +146,7 @@ namespace chess
 		}
 		else if (numBishops == 1) {
 			int bishopPos = getSinglePosition(bishopMap);
-			checkMask &= (pseudoRook(kingPos) & pseudoRook(bishopPos)) | bishopMap;
+			checkMask &= (pseudoBishop(kingPos) & pseudoBishop(bishopPos)) | bishopMap;
 		}
 	}
 
@@ -322,15 +321,27 @@ namespace chess
 	void Generator::addPromotionMoves() {}
 
 	void Generator::addEnPassantMoves() {
-		Bitmap startMap;
-		if (board->colour == WHITE) {
-			startMap |= (board->epMap & ~(AFile >> 7)) >> 9;
-			startMap |= (board->epMap & ~(AFile)) >> 7;
-		} else {
-			startMap |= (board->epMap & ~(AFile >> 7)) << 7;
-			startMap |= (board->epMap & ~(AFile)) << 9;
+		if (!board->epMap) return;
+		int epPos = getSinglePosition(board->epMap);
+		Bitmap pawnMap = pawnPushLookup[1 - board->colour][epPos];
+
+		if (!(pawnMap & checkMask)) return;
+
+		Bitmap startMap = pawnAttackLookup[1 - board->colour][epPos];
+		startMap &= board->positions[board->colour][PAWN];
+
+		int kingPos = getSinglePosition(board->positions[board->colour][KING]);
+		Bitmap rookMap = board->positions[1 - board->colour][ROOK];
+		Bitmap bishopMap = board->positions[1 - board->colour][BISHOP];
+		Bitmap queenMap = board->positions[1 - board->colour][QUEEN];
+
+		while (startMap) {
+			int pos = getNextPosition(startMap);
+			Bitmap alteredAll = board->all ^ board->epMap ^ bitset[pos] ^ pawnMap;
+			Bitmap rookAttacks = rookPseudoLookup[kingPos][alteredAll] & (rookMap | queenMap);
+			Bitmap bishopAttacks = rookPseudoLookup[kingPos][alteredAll] & (bishopMap | queenMap);
+			if (!(rookAttacks | bishopAttacks)) addMoves(pos, board->epMap, Flag::EN_PASSANT, PAWN);
 		}
-		startMap &= board->teamMaps[board->colour];
 
 	}
 
