@@ -330,7 +330,7 @@ void chess::Board::movePieceCastle(Bitmap start, Bitmap end) {
 void chess::Board::takePiece(Bitmap position, Type pieceType) {
 	positions[!colour][pieceType] ^= position;
 
-	if (pieceType == ROOK) removeSingleCastle(position, !colour);
+	if (pieceType == ROOK) removeSingleCastle(position, 1 - colour);
 
 	Piece alteringPiece(pieceType, !colour);
 	currentlyAltering.push_back({ alteringPiece, position });
@@ -367,11 +367,11 @@ void chess::Board::updateTeamPositions() {
 }
 
 void chess::Board::removeSingleCastle(Bitmap rookPosition, Colour clr) {
-	if ((rookPosition & leftStartingRooks[colour]) && leftCastles[colour]) {
-		leftCastles[colour] = false;
+	if ((rookPosition & leftStartingRooks[clr]) && leftCastles[clr]) {
+		leftCastles[clr] = false;
 	}
-	else if ((rookPosition & rightStartingRooks[colour]) && rightCastles[colour]) {
-		rightCastles[colour] = false;
+	else if ((rookPosition & rightStartingRooks[clr]) && rightCastles[clr]) {
+		rightCastles[clr] = false;
 	}
 }
 

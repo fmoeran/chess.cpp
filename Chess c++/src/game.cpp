@@ -5,17 +5,16 @@
 
 namespace chess
 {
-
-
+	std::string startingFen = "r3k2r/Pppp1ppp/1b3nbN/nPP5/BB2P3/q4N2/P2P2PP/Rr1Q1RK1 2 kq - 0 1";
 
 	chess::Game::Game(sf::RenderWindow& window, float size, bool whiteAI, bool blackAI, bool debug, sf::Vector2f coords) {
 		display = BoardDisplay(window, size, debug, coords);
+		board = Board::fromFen(startingFen);
 		generator = Generator(board);
-		currentLegalMoves = MoveList();
 
+		currentLegalMoves = MoveList();
 		whiteIsAI = whiteAI;
 		blackIsAI = blackAI;
-
 		mousePressed = false;
 		mouseReleased = false;
 		isHolding = false;
@@ -24,11 +23,12 @@ namespace chess
 
 	chess::Game::Game(sf::RenderWindow& window, bool whiteAI, bool blackAI) {
 		display = BoardDisplay(window, 90.0, false, sf::Vector2f(0, 0));
+		board = Board::fromFen(startingFen);
 		generator = Generator(board);
 
+		currentLegalMoves = MoveList();
 		whiteIsAI = whiteAI;
 		blackIsAI = blackAI;
-
 		mousePressed = false;
 		mouseReleased = false;
 		isHolding = false;
@@ -37,9 +37,9 @@ namespace chess
 	chess::Game::Game() {
 		whiteIsAI = false;
 		blackIsAI = false;
-
+		board = Board::fromFen(startingFen);
 		generator = Generator(board);
-
+		currentLegalMoves = MoveList();
 		mousePressed = false;
 		mouseReleased = false;
 		isHolding = false;
@@ -218,11 +218,13 @@ namespace chess
 		display.highlightMap = 0ULL;
 	}
 }
-
+/*
 int main() {
 	using namespace chess;
 	Game game;
 	
+	
 	Result res = game.run();
 	
 }
+*/

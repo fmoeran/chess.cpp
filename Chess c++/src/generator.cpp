@@ -84,8 +84,8 @@ namespace chess
 		addRookMoves();
 		addQueenMoves();
 		addKingMoves();
-		//addCastleMoves();
-		//addPromotionMoves();
+		addCastleMoves();
+		addPromotionMoves();
 		addEnPassantMoves();
 	}
 
@@ -316,9 +316,43 @@ namespace chess
 		addMoves(position, legalMoves, Flag::NONE, PAWN);
 	}
 
-	void Generator::addCastleMoves() {}
+	void Generator::addCastleMoves() {
+		
+		Bitmap kingMap = board->positions[board->colour][KING];
 
-	void Generator::addPromotionMoves() {}
+		Bitmap otherPositions = board->all & ~kingMap;
+
+		if (board->rightCastles[board->colour]) {
+			Bitmap coveredPositions = kingMap | (kingMap >> 1) | (kingMap >> 2);
+			if (!(coveredPositions & attackMask) && !(coveredPositions & otherPositions)) {
+				addMoves(getSinglePosition(kingMap), kingMap >> 2, Flag::CASTLE, PAWN);
+			}
+		}
+		if (board->leftCastles[board->colour]) {
+			Bitmap coveredPositions = kingMap | (kingMap << 1) | (kingMap << 2) | (kingMap << 3);
+			Bitmap noAttackPositions = kingMap | (kingMap << 1) | (kingMap << 2);
+			if (!(noAttackPositions & attackMask) && !(coveredPositions & otherPositions)) {
+				addMoves(getSinglePosition(kingMap), kingMap << 2, Flag::CASTLE, PAWN);
+			}
+		}
+	}
+
+	void Generator::addPromotionMoves() {
+		constexpr Type promotionPieces[4] = { KNIGHT, BISHOP, ROOK, QUEEN };
+
+		Bitmap endRow = pawnEndRows[board->colour];
+		Bitmap startMap = board->positions[board->colour][PAWN] & endRow;
+
+		while (startMap) {
+			int pos = getNextPosition(startMap);
+			Bitmap pseudoMoves = pseudoPawn(pos);
+			Bitmap pinMask = pinMasks[pos];
+			Bitmap legalMoves = pseudoMoves & checkMask & pinMask & enemyEmptyMask;
+			for (Type type : promotionPieces) {
+				addMoves(pos, legalMoves, Flag::PROMOTION, type);
+			}
+		}
+	}
 
 	void Generator::addEnPassantMoves() {
 		if (!board->epMap) return;
@@ -339,7 +373,7 @@ namespace chess
 			int pos = getNextPosition(startMap);
 			Bitmap alteredAll = board->all ^ board->epMap ^ bitset[pos] ^ pawnMap;
 			Bitmap rookAttacks = rookPseudoLookup[kingPos][alteredAll] & (rookMap | queenMap);
-			Bitmap bishopAttacks = rookPseudoLookup[kingPos][alteredAll] & (bishopMap | queenMap);
+			Bitmap bishopAttacks = bishopPseudoLookup[kingPos][alteredAll] & (bishopMap | queenMap);
 			if (!(rookAttacks | bishopAttacks)) addMoves(pos, board->epMap, Flag::EN_PASSANT, PAWN);
 		}
 
