@@ -5,7 +5,7 @@
 
 namespace chess
 {
-	std::string startingFen = "r3k2r/Pppp1ppp/1b3nbN/nPP5/BB2P3/q4N2/P2P2PP/Rr1Q1RK1 2 kq - 0 1";
+	std::string startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QKqk - 0 1";
 
 	chess::Game::Game(sf::RenderWindow& window, float size, bool whiteAI, bool blackAI, bool debug, sf::Vector2f coords) {
 		display = BoardDisplay(window, size, debug, coords);
@@ -21,8 +21,7 @@ namespace chess
 	}
 
 
-	chess::Game::Game(sf::RenderWindow& window, bool whiteAI, bool blackAI) {
-		display = BoardDisplay(window, 90.0, false, sf::Vector2f(0, 0));
+	chess::Game::Game(bool whiteAI, bool blackAI) {
 		board = Board::fromFen(startingFen);
 		generator = Generator(board);
 
@@ -57,7 +56,6 @@ namespace chess
 			bool ended = move();
 			if (ended) break;
 		}
-
 
 		return Result::WIN;
 	}
@@ -115,7 +113,10 @@ namespace chess
 		return false;
 	}
 
-	void chess::Game::aiMove() {}
+	void chess::Game::aiMove() {
+		Move bestMove = bot.search(board);
+		movePiece(bestMove);
+	}
 
 	void chess::Game::playerMove() {
 		if (!display.mouseIsOnBoard()) return;
@@ -225,7 +226,7 @@ namespace chess
 
 int main() {
 	using namespace chess;
-	Game game;
+	Game game(false, true);
 	Result res = game.run();
 	std::cout << (int)res << std::endl;
 }

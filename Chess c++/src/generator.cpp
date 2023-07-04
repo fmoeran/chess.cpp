@@ -67,6 +67,10 @@ namespace chess
 		std::fill(pinMasks, pinMasks + 64, 0ULL);
 	}
 
+	bool Generator::isCheck() {
+		return !(checkMask == ~0);
+	}
+
 	void Generator::getLegalMoves(MoveList* moveList) {
 		assert(board);
 		moves = moveList;
@@ -492,6 +496,7 @@ namespace chess
 			arr[pos] = neighbours;
 		}
 	}
+
 
 	MoveList::MoveList() {
 		count = 0u;

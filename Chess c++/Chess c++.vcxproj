@@ -156,22 +156,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\evaluate.cpp" />
     <ClCompile Include="src\bitboard.cpp" />
     <ClCompile Include="src\display.cpp" />
+    <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\generator.cpp" />
     <ClCompile Include="src\magics.cpp" />
     <ClCompile Include="src\move.cpp" />
-    <ClCompile Include="src\perft.cpp" />
     <ClCompile Include="src\pieces.cpp" />
+    <ClCompile Include="src\search.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\bitboard.hpp" />
     <ClInclude Include="include\display.hpp" />
+    <ClInclude Include="include\evaluate.hpp" />
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\generator.hpp" />
     <ClInclude Include="include\magics.hpp" />
     <ClInclude Include="include\move.hpp" />
     <ClInclude Include="include\pieces.hpp" />
+    <ClInclude Include="include\search.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

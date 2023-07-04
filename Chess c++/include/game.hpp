@@ -3,6 +3,7 @@
 #include "SFML/Graphics.hpp"
 
 #include "display.hpp"
+#include "search.hpp"
 #include "generator.hpp"
 #include "bitboard.hpp"
 #include "move.hpp"
@@ -19,8 +20,9 @@ namespace chess
 	class Game {
 	public:
 		Game(sf::RenderWindow& window, float size, bool whiteAI, bool blackAI, bool debug, sf::Vector2f coords);
-		Game(sf::RenderWindow& window, bool whiteAI, bool blackAI);
+		Game(bool whiteAI, bool blackAI);
 		Game();
+		
 
 		Result run();
 		bool running;
@@ -29,6 +31,8 @@ namespace chess
 		Board board;
 		BoardDisplay display;
 		Generator generator;
+		Bot bot;
+
 
 		std::stack<Move> pastMoves;
 		// white players are AI

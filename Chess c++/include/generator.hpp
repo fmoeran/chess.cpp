@@ -20,6 +20,8 @@ namespace chess
 
 		void getLegalMoves(MoveList* moveList);
 		Board* board;
+
+		bool isCheck();
 		
 	private:
 		MoveList* moves;

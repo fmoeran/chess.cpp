@@ -12,7 +12,7 @@ using namespace chess;
 struct Test {
 	std::string fen;
 	int depth;
-	int expected;
+	long long expected;
 };
 
 Test tests[] = {
@@ -24,8 +24,7 @@ Test tests[] = {
 };
 
 Test startpos6 = { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNRwKQkq - 0 1", 6, 119060324 };
-Test startpos7 = { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNRwKQkq - 0 1", 7, 3195901860 };
-
+Test startpos7 = { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNRwKQkq - 0 1", 7, 3195901860ll };
 
 
 Board board;
@@ -41,17 +40,17 @@ std::string formatCommas(std::string s) {
 	return s;
 }
 
-int perft(int depth, bool printMoves = true) {
+long long perft(int depth, bool printMoves = true) {
 	//MoveList moveList;
 	//delete moveList;
 	if (depth == 1) return (int)MoveList(generator).size();
 	
-	int nodeCount = 0;
+	long long nodeCount = 0;
 	
 	for (Move move : MoveList(generator)) {
 		board.makeMove(move);
 		
-		int count = perft(depth - 1, false);
+		long long count = perft(depth - 1, false);
 		nodeCount += count;
 
 		if (printMoves) std::cout << notate(move) << ": " << formatCommas(std::to_string(count)) << std::endl;
@@ -66,7 +65,7 @@ void runPerft(Test test, bool printMoves=true) {
 	int depth = test.depth;
 	board = Board::fromFen(test.fen);
 
-	int nodes = perft(depth, printMoves);
+	long long nodes = perft(depth, printMoves);
 
 	auto t1 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
@@ -84,6 +83,6 @@ void runPerft(Test test, bool printMoves=true) {
 }
 
 int main() {
-	//for (Test test : tests) runPerft(test, false);
-	runPerft(startpos6);
+	for (Test test : tests) runPerft(test, false);
+	
 }

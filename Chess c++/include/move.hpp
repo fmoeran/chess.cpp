@@ -17,14 +17,13 @@ namespace chess
 
 	const size_t maxMoveCount = 218; // maximum possible number of moves from any position
 
-
-
 	// move is stored in 16 bits of Move::value
 	// 0-5 start position
 	// 6-11 end position
 	// 12-13 flag
 	// 14-15 piece: knight(0), bishop(1), rook(2), queen(3)
 	using Move = int;
+	const int NULL_MOVE = 0;
 
 	Move makeMove(int start, int end);
 	Move makeMove(int start, int end, Flag flag, Type promotion);
