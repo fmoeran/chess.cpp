@@ -32,26 +32,34 @@ namespace chess
 	
 	using CastleRules = std::array<bool, 2>;
 
-	struct BoardState {
-		Bitmap epMap;
-		bool wlc, wrc, blc, brc; // castle rights
-		int moveCount, halfMoveCount;
-		Colour colour;
-	};
+	/*struct BoardState {
+		Bitmap epMap; // 3 bits + 1
+		bool wlc, wrc, blc, brc; // castle rights, 4bits
+		int moveCount, halfMoveCount; // 13, 6
+		Colour colour; //1
+	};*/
+	// bits that BoardState represents
+	// 0-13 = move count
+	// 14-19 = half move count
+	// 20 = wlc, 21 = wrc, 22 = blc, 23 = brc
+	// 24 = (bool) en passant
+	// 25-27 = en passent row index
+	// 28 = (bool) taken piece
+	// 29-31 taken piece type
+	using BoardState = unsigned int;
 
-	struct PieceInfo {
-		Piece piece;
-		Bitmap mapPosition;
-	};
+	BoardState createState(int moveCount, int halfMoveCount, bool wlc, bool wrc, bool blc, bool brc, Bitmap epMap, bool capture, Type captureType);
 
-	struct Log {
-		BoardState info;
-		std::vector<PieceInfo> pieceInfo;
+	int getMoveCount(BoardState state);
+	int getHalfMoveCount(BoardState state);
+	bool wlc(BoardState state);
+	bool wrc(BoardState state);
+	bool blc(BoardState state);
+	bool brc(BoardState state);
+	Bitmap getEpMap(BoardState state, Colour colour);
+	bool isCapture(BoardState state);
+	Type captureType(BoardState state);
 
-		Log(BoardState boardInfo);
-
-		void addPiece(Piece piece, Bitmap mapPosition);
-	};
 
 	struct Board {
 	public:
@@ -69,11 +77,7 @@ namespace chess
 		int halfMoves;
 		Colour colour;
 
-		// stores a list of piece positions that will be toggled when a move is made.
-		// altered and reset each make_move call
-		std::vector<std::pair<Piece, Bitmap>> currentlyAltering;
-
-		std::stack<Log> logs;
+		std::stack<BoardState> pastStates;
 
 		Board(Bitmap wp, Bitmap wn, Bitmap wb, Bitmap wr, Bitmap wq, Bitmap wk, Bitmap bp, Bitmap bn, Bitmap bb, Bitmap br, Bitmap bq, Bitmap bk, Bitmap ep,
 		      bool wlc, bool wrc, bool blc, bool brc, int move_count, int hm, Colour colour);
@@ -90,12 +94,11 @@ namespace chess
 		// NOTE this does not take legality into account
 		void makeMove(Move move);
 
-		void unmakeMove();
+		void unmakeMove(Move move);
 
 	private:
 		void setPositions(Bitmap wp, Bitmap wn, Bitmap wb, Bitmap wr, Bitmap wq, Bitmap wk, Bitmap bp, Bitmap bn, Bitmap bb, Bitmap br, Bitmap bq, Bitmap bk);
 		void setGameState(Bitmap ep, bool wlc, bool wrc, bool blc, bool brc, int moveCount, int hm, Colour clr);
-		BoardState& getGameState();
 
 		// moving 1 friendly piece to a different square.
 		// does not affect the opposing team

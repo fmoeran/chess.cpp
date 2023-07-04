@@ -67,7 +67,7 @@ namespace chess
 		mouseReleased = false;
 		sf::Event eventInput;
 		while (display.window->pollEvent(eventInput)) {
-			switch (eventInput.type) {
+			switch (eventInput.type) { 
 			case sf::Event::Closed:
 				running = false;
 			case sf::Event::KeyPressed:
@@ -90,8 +90,9 @@ namespace chess
 	}
 
 	void chess::Game::undoMove() {
-		if (board.logs.size() == 0) return;
-		board.unmakeMove();
+		if (pastMoves.empty()) return;
+		board.unmakeMove(pastMoves.top());
+		pastMoves.pop();
 		updateCurrentMoves();
 		isHolding = false;
 	}
@@ -147,8 +148,8 @@ namespace chess
 		}
 	}
 
-	void chess::Game::placeHolding(Bitmap posmap) {
-		Move move = generateMove(pickedPosition, posmap);
+	void chess::Game::placeHolding(int pos) {
+		Move move = generateMove(pickedPosition, pos);
 
 		bool isLegal = std::find(currentLegalMoves.begin(), currentLegalMoves.end(), move) != currentLegalMoves.end();
 
@@ -172,16 +173,19 @@ namespace chess
 		if (moveIsLegal(move)) {
 			return move;
 		}
+		
 
 		// castle
-		if (start & board.positions[board.colour][KING]) {
+		if (bitset[start] & board.positions[board.colour][KING]) {
 			move = makeCastle(start, end);
 			if (moveIsLegal(move)) {
 				return move;
 			}
 		}
+		
 		// pawn
-		if (start & board.positions[board.colour][PAWN]) {
+		if (bitset[start] & board.positions[board.colour][PAWN]) {
+			
 			// en passant
 			move = makeEnPassant(start, end);
 			if (moveIsLegal(move)) {
@@ -200,8 +204,8 @@ namespace chess
 
 	void chess::Game::movePiece(Move move) {
 		if (!moveIsLegal(move)) throw("Illegal move attempted");
-
 		board.makeMove(move);
+		pastMoves.push(move);
 		currentLegalMoves.clear();
 	}
 
@@ -218,13 +222,10 @@ namespace chess
 		display.highlightMap = 0ULL;
 	}
 }
-/*
+
 int main() {
 	using namespace chess;
 	Game game;
-	
-	
 	Result res = game.run();
-	
+	std::cout << (int)res << std::endl;
 }
-*/

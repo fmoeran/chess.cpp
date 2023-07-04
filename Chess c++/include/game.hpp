@@ -29,6 +29,8 @@ namespace chess
 		Board board;
 		BoardDisplay display;
 		Generator generator;
+
+		std::stack<Move> pastMoves;
 		// white players are AI
 		bool whiteIsAI, blackIsAI;
 		// true on the fram that it occurs
@@ -59,7 +61,7 @@ namespace chess
 		// activates holding, isHolding, pickedPosition
 		void grabPosition(int pos);
 		// places holding
-		void placeHolding(Bitmap posmap);
+		void placeHolding(int pos);
 
 		bool moveIsLegal(Move move);
 

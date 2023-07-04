@@ -23,6 +23,11 @@ Test tests[] = {
 	{"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8", 5, 89941194}
 };
 
+Test startpos6 = { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNRwKQkq - 0 1", 6, 119060324 };
+Test startpos7 = { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNRwKQkq - 0 1", 7, 3195901860 };
+
+
+
 Board board;
 Generator generator(board);
 
@@ -51,7 +56,7 @@ int perft(int depth, bool printMoves = true) {
 
 		if (printMoves) std::cout << notate(move) << ": " << formatCommas(std::to_string(count)) << std::endl;
 
-		board.unmakeMove();
+		board.unmakeMove(move);
 	}
 	return nodeCount;
 }
@@ -79,5 +84,6 @@ void runPerft(Test test, bool printMoves=true) {
 }
 
 int main() {
-	for (Test test : tests) runPerft(test, false);
+	//for (Test test : tests) runPerft(test, false);
+	runPerft(startpos6);
 }
