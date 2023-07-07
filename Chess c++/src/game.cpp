@@ -205,7 +205,10 @@ namespace chess
 	}
 
 	void chess::Game::movePiece(Move move) {
-		if (!moveIsLegal(move)) throw("Illegal move attempted");
+		if (!moveIsLegal(move)) {
+			std::cout << "Illegal move attempted: " << notate(move) << std::endl;
+			throw("Illegal move attempted");
+		}
 		board.makeMove(move);
 		pastMoves.push(move);
 		currentLegalMoves.clear();

@@ -16,86 +16,92 @@ std::string formatCommas(std::string s) {
 	return s;
 }
 
-void printLoadingBar(int current, int total, int width) {
-	char filler = 219;
-	std::cout << "[";
-	float progress = (float)current / (float)total;
-	int pos = width * progress;
-	for (int i = 0; i < width; i++) {
-		if (i <= pos) std::cout << filler;
-		//else if (i == pos) std::cout << ">";
-		else std::cout << " ";
-	}
-	std::cout << "]";
-	std::cout << int(progress * 100) << "%\r";
-	std::cout.flush();
-	
-}
-
 
 namespace chess
 {
-	const int DEFAULT_DEPTH = 6;
+	const int MAX_SEARCH_DEPTH = 10000;
+
+	const int DEFAULT_TIME = 1000.0; // milliseconds
 
 	const int POSITIVE_INFINITY = 99999999;
 	const int NEGATIVE_INFINITY = -POSITIVE_INFINITY;
 
 	Bot::Bot() {
-		defaultDepth = DEFAULT_DEPTH;
+		maxSearchTime = DEFAULT_TIME;
 		nodes = 0;
 	}
 
-	Bot::Bot(int depth) {
-		defaultDepth = depth;
+	Bot::Bot(double searchTime) {
+		maxSearchTime = searchTime;
 		nodes = 0;
 	}
 
 	Move Bot::search(Board board) {
-		auto t0 = std::chrono::high_resolution_clock::now();
+		searchStartTime = std::chrono::system_clock::now();
 
 		generator = Generator(board);
+		int searchDepth = 1;
 
+		Move bestMove = NULL_MOVE;
+		int bestEval = 0;
+		
+		for (; searchDepth < MAX_SEARCH_DEPTH; searchDepth++) {
+			searchRoot(board, searchDepth);
+
+
+			if (shouldFinishSearch()) {
+				break;
+			}
+
+			if (bestRootMove != NULL_MOVE) {
+				bestMove = bestRootMove;
+				bestEval = bestRootEval;
+			}
+
+			std::cout << "depth: " << searchDepth << '\r';
+			std::cout.flush();
+		}
+		std::cout << std::endl;
+		
+		std::cout << "nodes: " << formatCommas(std::to_string(nodes)) << std::endl;
+		std::cout << "value: " << formatCommas(std::to_string(bestRootEval)) << std::endl;
+
+		return bestRootMove;
+
+	}
+
+	void Bot::searchRoot(Board& board, int depth) {
+		nodes = 0;
 		MoveList moves(generator);
 		order(board, moves);
-
 
 		nodes += (int)moves.size();
 
 		Move bestMove = NULL_MOVE;
+		int bestScore = NEGATIVE_INFINITY;
 
-		int alpha = NEGATIVE_INFINITY;
-		int beta = POSITIVE_INFINITY;
-		int i = 0;
 		for (Move move : moves) {
-			printLoadingBar(i, moves.size(), 40);
-			i++;
 
 			board.makeMove(move);
-			int score = -negamax(board, defaultDepth - 1, -beta, -alpha);
+			int score = -negamax(board, depth - 1, NEGATIVE_INFINITY, -bestScore);
 			board.unmakeMove(move);
 
-			if (score > alpha) {
-				alpha = score;
+			if (score > bestScore) {
+				bestScore = score;
 				bestMove = move;
 			}
-
+			if (shouldFinishSearch()) return;
 		}
-		printLoadingBar(i, moves.size(), 40);
-		std::cout << std::endl;
-
-		auto t1 = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
-		double elapsed = (double)duration.count() / 1000;
-
-		std::cout << "nodes: " << formatCommas(std::to_string(nodes)) << std::endl;
-		std::cout << "time: " << formatCommas(std::to_string((int)elapsed)) << "s" << std::endl;
-		std::cout << "value: " << formatCommas(std::to_string(alpha)) << std::endl;
-
-		return bestMove;
+		bestRootMove = bestMove;
+		bestRootEval = bestScore;
 
 	}
 
+	
+
 	int Bot::negamax(Board& board, int depth, int alpha, int beta) {
+
+		if (shouldFinishSearch()) return beta;
 
 		if (depth == 0) {
 			return evaluate(board);
@@ -132,7 +138,10 @@ namespace chess
 		return best;
 	}
 
-
+	bool Bot::shouldFinishSearch() {
+		using namespace std::chrono;
+		return duration_cast<milliseconds>(system_clock::now() - searchStartTime).count() > maxSearchTime;
+	}
 
 
 
