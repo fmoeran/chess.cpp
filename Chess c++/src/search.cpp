@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <chrono>
 
-std::string formatCommas(std::string s) {
+std::string formatToCommas(std::string s) {
 	int n = (int)s.size() - 3;
 	if (s[0] == '-') n--;
 	while (n > 0) {
@@ -23,20 +23,24 @@ namespace chess
 
 	const int DEFAULT_TIME = 1000.0; // milliseconds
 
+	const size_t TRANSPOSITION_SIZE = 10000000;
+
 	const int POSITIVE_INFINITY = 99999999;
 	const int NEGATIVE_INFINITY = -POSITIVE_INFINITY;
 
-	Bot::Bot() {
+	Bot::Bot(): tt(TRANSPOSITION_SIZE) {
 		maxSearchTime = DEFAULT_TIME;
 		nodes = 0;
 	}
 
-	Bot::Bot(double searchTime) {
+	Bot::Bot(double searchTime) : tt(TRANSPOSITION_SIZE) {
 		maxSearchTime = searchTime;
 		nodes = 0;
 	}
 
 	Move Bot::search(Board board) {
+		transposCount = 0;
+		nodes = 0;
 		searchStartTime = std::chrono::system_clock::now();
 
 		generator = Generator(board);
@@ -47,7 +51,7 @@ namespace chess
 		
 		for (; searchDepth < MAX_SEARCH_DEPTH; searchDepth++) {
 			searchRoot(board, searchDepth);
-
+			//std::cout << std::endl;
 
 			if (shouldFinishSearch()) {
 				break;
@@ -63,16 +67,18 @@ namespace chess
 		}
 		std::cout << std::endl;
 		
-		std::cout << "nodes: " << formatCommas(std::to_string(nodes)) << std::endl;
-		std::cout << "value: " << formatCommas(std::to_string(bestRootEval)) << std::endl;
+		std::cout << "nodes: " << formatToCommas(std::to_string(nodes)) << std::endl;
+		std::cout << "value: " << formatToCommas(std::to_string(bestRootEval)) << std::endl;
+		std::cout << "transpositions: " << formatToCommas(std::to_string(transposCount)) << std::endl;
+		std::cout << "transpos storage used: " << tt.percentFull() << '%' << std::endl;
 
 		return bestRootMove;
 
 	}
 
 	void Bot::searchRoot(Board& board, int depth) {
-		nodes = 0;
 		MoveList moves(generator);
+
 		order(board, moves);
 
 		nodes += (int)moves.size();
@@ -90,6 +96,7 @@ namespace chess
 				bestScore = score;
 				bestMove = move;
 			}
+			//std::cout << bestScore << ' ';
 			if (shouldFinishSearch()) return;
 		}
 		bestRootMove = bestMove;
@@ -100,6 +107,11 @@ namespace chess
 	
 
 	int Bot::negamax(Board& board, int depth, int alpha, int beta) {
+
+		if (tt.contains(board.zobrist, depth, alpha, beta)) {
+			transposCount++;
+			return tt[board.zobrist].value;
+		}
 
 		if (shouldFinishSearch()) return beta;
 
@@ -117,6 +129,8 @@ namespace chess
 
 		order(board, moves);
 
+		NodeType nodeType = NodeType::LOWER;
+
 		int best = NEGATIVE_INFINITY;
 
 		for (Move move : moves) {
@@ -126,15 +140,21 @@ namespace chess
 			board.unmakeMove(move);
 
 			if (score >= beta) {
-				return beta;
+				nodeType = NodeType::UPPER;
+				best = beta;
+				break;
 			}
 			if (score > best) {
+				nodeType = NodeType::LOWER;
 				best = score;
 				if (score > alpha) {
 					alpha = score;
 				}
 			}
 		}
+
+		TTEntry entry = { board.zobrist, depth, best, nodeType, false };
+		tt.replace(entry);
 		return best;
 	}
 

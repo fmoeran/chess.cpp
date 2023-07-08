@@ -6,8 +6,8 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <cstdlib>
 
-//#pragma intrinsic(_BitScanForward)
 
 namespace chess
 {
@@ -17,6 +17,8 @@ namespace chess
 	// positions where each rook should be when they can still castle
 	const Bitmap rightStartingRooks[2] = { 1ULL, 1ULL << 56 };
 	const Bitmap leftStartingRooks[2] = { 1ULL << 7, 1ULL << 63 };
+
+	
 
 	void chess::printmap(Bitmap bitmap)
 	{
@@ -56,7 +58,6 @@ namespace chess
 
 		return count;
 		*/
-
 	}
 
 	int chess::getNextPosition(Bitmap& bitmap) {
@@ -68,52 +69,37 @@ namespace chess
 		return getSinglePosition(positionMap);
 	}
 
-	BoardState createState(int moveCount, int halfMoveCount, bool wlc, bool wrc, bool blc, bool brc, Bitmap epMap, bool capture, Type captureType) {
-		return (moveCount) | (halfMoveCount << 14) |
-			((int)wlc << 20) | ((int)wrc << 21) | ((int)blc << 22) | ((int)brc << 23) |
-			((bool)epMap << 24) | ((getSinglePosition(epMap) % 8) << 25) | (capture << 28) | ((int)captureType << 29);
+	Zobrist makeRandomZobrist() {
+		return
+			((Zobrist)std::rand() & 0xffULL) |
+			(((Zobrist)std::rand() & 0xffULL) << 8) |
+			(((Zobrist)std::rand() & 0xffULL) << 16) |
+			(((Zobrist)std::rand() & 0xffULL) << 24) |
+			(((Zobrist)std::rand() & 0xffULL) << 32) |
+			(((Zobrist)std::rand() & 0xffULL) << 40) |
+			(((Zobrist)std::rand() & 0xffULL) << 48) |
+			(((Zobrist)std::rand() & 0xffULL) << 56);
 	}
 
+	Zobrist zobristPieces[2][6][64];
+	Zobrist zobristTeam;
+	Zobrist zobristRightCastles[2];
+	Zobrist zobristLeftCastles[2];
+	Zobrist zobristEp[8];
 
-	int getMoveCount(BoardState state) {
-		return state & 0b1111111111111; // 13 bits
-	}
+	struct ZobristLoader {
+		ZobristLoader() {
+			for (int i = 0; i < 2 * 6 * 64; i++) zobristPieces[i % 2][(i / 2) % 6][(i / 2 / 6) % 64] = makeRandomZobrist();
+			zobristTeam = makeRandomZobrist();
+			zobristRightCastles[WHITE] = makeRandomZobrist();
+			zobristRightCastles[BLACK] = makeRandomZobrist();
+			zobristLeftCastles[WHITE] = makeRandomZobrist();
+			zobristLeftCastles[BLACK] = makeRandomZobrist();
+			for (int i = 0; i < 8; i++) zobristEp[i] = makeRandomZobrist();
+		}
+	};
 
-	int getHalfMoveCount(BoardState state) {
-		return (state >> 14) & 0b111111;
-	}
-
-	bool wlc(BoardState state) {
-		return (state >> 20) & 1;
-	}
-
-	bool wrc(BoardState state) {
-		return (state >> 21) & 1;
-	}
-
-	bool blc(BoardState state) {
-		return (state >> 22) & 1;
-	}
-
-	bool brc(BoardState state) {
-		return (state >> 23) & 1;
-	}
-
-	Bitmap getEpMap(BoardState state, Colour colour) {
-		bool ep = (state >> 24) & 1;
-		if (!ep) return 0ULL;
-		int row = (state >> 25) & 0b111;
-		if (colour == WHITE) return bitset[row + 40];
-		else return bitset[row + 16];
-	}
-
-	bool isCapture(BoardState state) {
-		return (state >> 28) & 1;
-	}
-
-	Type captureType(BoardState state) {
-		return (state >> 29) & 0b111;
-	}
+	ZobristLoader zobristLoader;
 
 	void Board::setPositions(Bitmap wp, Bitmap wn, Bitmap wb, Bitmap wr, Bitmap wq, Bitmap wk, Bitmap bp, Bitmap bn, Bitmap bb, Bitmap br, Bitmap bq, Bitmap bk) {
 		Bitmap newPositions[2][6] = { {wp, wn, wb, wr, wq, wk}, {bp, bn, bb, br, bq, bk} };
@@ -136,6 +122,7 @@ namespace chess
 	{
 		setPositions(wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk);
 		setGameState(ep, wlc, wrc, blc, brc, move_count, hm, colour);
+		loadZobrist();
 	}
 	Board::Board() {
 		*this = Board::fromFen(startingFen);
@@ -203,7 +190,7 @@ namespace chess
 			wlc, wrc, blc, brc, moves, hm, initColour);
 	}
 
-	std::string chess::Board::toString()
+	std::string chess::Board::toString() const
 	{
 		Bitmap position = 1ULL << 63;
 		std::string out = "";
@@ -251,9 +238,11 @@ namespace chess
 		}
 
 		// update past states stack
-		pastStates.push(createState(currentMove, halfMoves,
+		BoardState currentState = { currentMove, halfMoves,
 			leftCastles[WHITE], rightCastles[WHITE], leftCastles[BLACK], rightCastles[BLACK],
-			epMap, capture, endPieceType));
+			epMap, capture, endPieceType, zobrist};
+
+		pastStates.push(currentState);
 
 		// this is done after adding to the state as taking the piece could affect castling rules
 		if (capture) {
@@ -283,7 +272,10 @@ namespace chess
 		}
 
 		// update epMap
-		epMap = 0;
+		if (epMap) {
+			zobrist ^= zobristEp[getSinglePosition(epMap) % 8];
+			epMap = 0;
+		}
 		if (startPieceType == PAWN) {
 			updateEpMap(start, end);
 		}
@@ -299,6 +291,10 @@ namespace chess
 
 	void chess::Board::movePieceDefault(Bitmap start, Bitmap end, Type pieceType) {
 		positions[colour][pieceType] ^= start | end;
+		
+		zobrist ^= zobristPieces[colour][pieceType][getSinglePosition(start)];
+		zobrist ^= zobristPieces[colour][pieceType][getSinglePosition(end)];
+
 		if (pieceType == ROOK) {
 			removeSingleCastle(start, colour);
 		}
@@ -317,6 +313,9 @@ namespace chess
 	void chess::Board::movePiecePromotion(Bitmap start, Bitmap end, Type promotionType) {
 		positions[colour][PAWN] ^= start;
 		positions[colour][promotionType] |= end;
+
+		zobrist ^= zobristPieces[colour][PAWN][getSinglePosition(start)];
+		zobrist ^= zobristPieces[colour][promotionType][getSinglePosition(end)];
 	}
 
 	void chess::Board::movePieceCastle(Bitmap start, Bitmap end) {
@@ -350,6 +349,8 @@ namespace chess
 	void chess::Board::takePiece(Bitmap position, Type pieceType) {
 		positions[!colour][pieceType] ^= position;
 
+		zobrist ^= zobristPieces[!colour][pieceType][getSinglePosition(position)];
+
 		if (pieceType == ROOK) removeSingleCastle(position, 1 - colour);
 	}
 
@@ -364,12 +365,14 @@ namespace chess
 			if ((end << 10) > start) return;
 			epMap = end << 8;
 		}
+		zobrist ^= zobristEp[getSinglePosition(epMap) % 8];
 	}
 
 	void chess::Board::incrementGameState() {
 		currentMove++;
 		halfMoves++;
 		colour = !colour;
+		zobrist ^= zobristTeam;
 	}
 
 	void chess::Board::updateTeamPositions() {
@@ -387,9 +390,11 @@ namespace chess
 	void chess::Board::removeSingleCastle(Bitmap rookPosition, Colour clr) {
 		if ((rookPosition & leftStartingRooks[clr]) && leftCastles[clr]) {
 			leftCastles[clr] = false;
+			zobrist ^= zobristLeftCastles[clr];
 		}
 		else if ((rookPosition & rightStartingRooks[clr]) && rightCastles[clr]) {
 			rightCastles[clr] = false;
+			zobrist ^= zobristRightCastles[clr];
 		}
 	}
 
@@ -397,7 +402,7 @@ namespace chess
 		BoardState state = pastStates.top();
 		pastStates.pop();
 
-		setGameState(getEpMap(state, !colour), wlc(state), wrc(state), blc(state), brc(state), getMoveCount(state), getHalfMoveCount(state), !colour);
+		setGameState(state.epMap, state.wlc, state.wrc, state.blc, state.brc, state.moveCount, state.halfMoveCount, !colour);
 
 		Bitmap start = bitset[getStart(move)];
 		Bitmap end = bitset[getEnd(move)];
@@ -413,8 +418,8 @@ namespace chess
 				movePiece++;
 			}
 			movePieceDefault(end, start, movePiece);
-			if (isCapture(state)) {
-				Type taken = captureType(state);
+			if (state.isCapture) {
+				Type taken = state.capture;
 				positions[!colour][taken] ^= end;
 
 			}
@@ -436,15 +441,41 @@ namespace chess
 			Type promoPiece = getPromotion(move);
 			positions[colour][promoPiece] ^= end;
 			positions[colour][PAWN] ^= start;
-			if (isCapture(state)) {
-				Type taken = captureType(state);
+			if (state.isCapture) {
+				Type taken = state.capture;
 				positions[!colour][taken] ^= end;
 			}
 		}
 		updateTeamPositions();
+		zobrist = state.zobrist;
 	}
 
-	void chess::Board::print() {
+	void Board::loadZobrist() {
+		zobrist = 0;
+		
+		// pieces
+		for (int team = 0; team <= 1; team = team+1) {
+			for (Type piece = PAWN; piece <= KING; piece++) {
+				for (int pos = 0; pos < 64; pos++) {
+					if (bitset[pos] & positions[team][piece]) {
+						zobrist ^= zobristPieces[team][piece][pos];
+					}
+				}
+			}
+		}
+		// team colour
+		zobrist ^= zobristTeam * colour;
+		// castles
+		zobrist ^= zobristRightCastles[WHITE] * rightCastles[WHITE];
+		zobrist ^= zobristRightCastles[BLACK] * rightCastles[BLACK];
+		zobrist ^= zobristLeftCastles[WHITE] * leftCastles[WHITE];
+		zobrist ^= zobristLeftCastles[BLACK] * leftCastles[BLACK];
+		// ep
+		if (epMap) zobrist ^= zobristEp[getSinglePosition(epMap) % 8];
+		
+	}
+
+	void chess::Board::print() const {
 		std::cout << toString() << std::endl;
 	}
 }

@@ -32,12 +32,9 @@ namespace chess
 	
 	using CastleRules = std::array<bool, 2>;
 
-	/*struct BoardState {
-		Bitmap epMap; // 3 bits + 1
-		bool wlc, wrc, blc, brc; // castle rights, 4bits
-		int moveCount, halfMoveCount; // 13, 6
-		Colour colour; //1
-	};*/
+	using Zobrist = uint64_t;
+
+	
 	// bits that BoardState represents
 	// 0-13 = move count
 	// 14-19 = half move count
@@ -46,20 +43,17 @@ namespace chess
 	// 25-27 = en passent row index
 	// 28 = (bool) taken piece
 	// 29-31 taken piece type
-	using BoardState = unsigned int;
+	//using BoardState = unsigned int;
+	struct BoardState {
+		int moveCount;
+		int halfMoveCount;
+		bool wlc, wrc, blc, brc;
+		Bitmap epMap;
+		bool isCapture;
+		Type capture;
 
-	BoardState createState(int moveCount, int halfMoveCount, bool wlc, bool wrc, bool blc, bool brc, Bitmap epMap, bool capture, Type captureType);
-
-	int getMoveCount(BoardState state);
-	int getHalfMoveCount(BoardState state);
-	bool wlc(BoardState state);
-	bool wrc(BoardState state);
-	bool blc(BoardState state);
-	bool brc(BoardState state);
-	Bitmap getEpMap(BoardState state, Colour colour);
-	bool isCapture(BoardState state);
-	Type captureType(BoardState state);
-
+		Zobrist zobrist;
+	};
 
 	struct Board {
 	public:
@@ -77,6 +71,8 @@ namespace chess
 		int halfMoves;
 		Colour colour;
 
+		Zobrist zobrist;
+
 		std::stack<BoardState> pastStates;
 
 		Board(Bitmap wp, Bitmap wn, Bitmap wb, Bitmap wr, Bitmap wq, Bitmap wk, Bitmap bp, Bitmap bn, Bitmap bb, Bitmap br, Bitmap bq, Bitmap bk, Bitmap ep,
@@ -86,9 +82,9 @@ namespace chess
 		// returns a fully initialied instance of a Board from a FEN string
 		static Board fromFen(std::string fen); 
 
-		std::string toString();
+		std::string toString() const;
 
-		void print();
+		void print() const;
 
 		// makes a move on the board and updates logic (e.g. currentMove)
 		// NOTE this does not take legality into account
@@ -116,6 +112,9 @@ namespace chess
 		void updateTeamPositions();
 		// removes a castling right when a rook is moved
 		void removeSingleCastle(Bitmap rookPosition, Colour clr);
+		// remakes this->zobrist
+		// this is slow, only use it in constructor
+		void loadZobrist();
 
 	};
 

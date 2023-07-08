@@ -3,6 +3,7 @@
 #include "move.hpp"
 #include "bitboard.hpp"
 #include "generator.hpp"
+#include "transposition.hpp"
 
 #include <chrono>
 
@@ -21,7 +22,8 @@ namespace chess
 	private:
 		Move bestRootMove;
 		int bestRootEval;
-
+		TranspositionTable tt;
+		int transposCount;
 		
 
 		Generator generator;

@@ -2,17 +2,18 @@
 #include "move.hpp"
 #include "evaluate.hpp"
 #include <algorithm>
+#include <iostream>
 
 namespace chess
 {
 	int estimateValue(const Board& board, Move move) {
 		int value = 0;
-		bool capture = getEnd(move) & board.teamMaps[!board.colour];
+		bool capture = bitset[getEnd(move)] & board.teamMaps[!board.colour];
 		if (capture) {
 			Type startPiece, endPiece;
 			for (Type piece = PAWN; piece <= KING; piece++) {
-				if (getStart(move) & board.positions[board.colour][piece]) startPiece = piece;
-				if (getEnd(move) & board.positions[!board.colour][piece]) endPiece = piece;
+				if (bitset[getStart(move)] & board.positions[board.colour][piece]) startPiece = piece;
+				if (bitset[getEnd(move)] & board.positions[!board.colour][piece]) endPiece = piece;
 			}
 			value += pieceWorths[endPiece] - pieceWorths[startPiece];
 		}

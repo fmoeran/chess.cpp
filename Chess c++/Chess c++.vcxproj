@@ -156,16 +156,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\order.cpp" />
     <ClCompile Include="src\evaluate.cpp" />
     <ClCompile Include="src\bitboard.cpp" />
     <ClCompile Include="src\display.cpp" />
-    <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\generator.cpp" />
     <ClCompile Include="src\magics.cpp" />
     <ClCompile Include="src\move.cpp" />
     <ClCompile Include="src\pieces.cpp" />
     <ClCompile Include="src\search.cpp" />
+    <ClCompile Include="src\transposition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\bitboard.hpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="include\order.hpp" />
     <ClInclude Include="include\pieces.hpp" />
     <ClInclude Include="include\search.hpp" />
+    <ClInclude Include="include\transposition.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
