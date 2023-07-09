@@ -13,7 +13,7 @@ namespace chess
 	class Bot {
 	public:
 		Bot();
-		Bot(double searchTime);
+		Bot(double searchTime, bool quies=false);
 
 		// finds the best move in a given position
 		// uses iterative deepening
@@ -25,6 +25,7 @@ namespace chess
 		TranspositionTable tt;
 		int transposCount;
 		
+		bool runQuiescence;
 
 		Generator generator;
 		int nodes;
@@ -40,6 +41,8 @@ namespace chess
 		void searchRoot(Board& board, int depth);
 
 		int negamax(Board& board, int depth, int alpha, int beta);
+
+		int quiescence(Board& board, int alpha, int beta);
 
 	};
 }

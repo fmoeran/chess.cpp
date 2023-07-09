@@ -71,7 +71,7 @@ namespace chess
 		return !(checkMask == ~0);
 	}
 
-	void Generator::getLegalMoves(MoveList* moveList) {
+	void Generator::getLegalMoves(MoveList* moveList, bool captures) {
 		assert(board);
 		moves = moveList;
 		
@@ -81,6 +81,10 @@ namespace chess
 		loadCheckMask();
 		loadAttackMask();
 		loadPinMasks();
+
+		if (captures) {
+			enemyEmptyMask = board->teamMaps[!board->colour];
+		}
 
 		addPawnMoves();
 		addKnightMoves();
@@ -505,6 +509,11 @@ namespace chess
 	MoveList::MoveList(Generator& generator) {
 		count = 0;
 		generator.getLegalMoves(this);
+	}
+
+	MoveList::MoveList(Generator& generator, bool onlyCaptures) {
+		count = 0;
+		generator.getLegalMoves(this, onlyCaptures);
 	}
 
 	void MoveList::add(Move move) {

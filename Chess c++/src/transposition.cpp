@@ -31,9 +31,15 @@ namespace chess
 	}
 
 	void TranspositionTable::replace(TTEntry entry) {
+		(*this)[entry.zobrist] = entry;
+		return;
 		if ((*this)[entry.zobrist].depth <= entry.depth) {
 			(*this)[entry.zobrist] = entry;
 		}
+	}
+
+	void TranspositionTable::clear() {
+		std::memset(table, 0, sizeof(TTEntry) * size);
 	}
 
 	double TranspositionTable::percentFull() {

@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\game.cpp" />
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\order.cpp" />
     <ClCompile Include="src\evaluate.cpp" />
     <ClCompile Include="src\bitboard.cpp" />

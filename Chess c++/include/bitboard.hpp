@@ -46,7 +46,7 @@ namespace chess
 	//using BoardState = unsigned int;
 	struct BoardState {
 		int moveCount;
-		int halfMoveCount;
+		uint8_t halfMoveCount;
 		bool wlc, wrc, blc, brc;
 		Bitmap epMap;
 		bool isCapture;

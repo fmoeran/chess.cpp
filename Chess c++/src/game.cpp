@@ -6,7 +6,7 @@
 namespace chess
 {
 	std::string startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QKqk - 0 1";
-	//std::string startingFen = "3r4/3k4/8/3K4/8/8/8/8 w - - 0 1";
+	//std::string startingFen = "3rr3/3k4/8/3K4/8/8/8/8 w - - 0 1";
 	//std::string startingFen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
 
 	chess::Game::Game(sf::RenderWindow& window, float size, bool whiteAI, bool blackAI, bool debug, sf::Vector2f coords) {
@@ -58,7 +58,8 @@ namespace chess
 			bool ended = move();
 			if (ended) break;
 		}
-
+		board.print();
+		std::cin.ignore();
 		return Result::WIN;
 	}
 
@@ -208,6 +209,7 @@ namespace chess
 	void chess::Game::movePiece(Move move) {
 		if (!moveIsLegal(move)) {
 			std::cout << "Illegal move attempted: " << notate(move) << std::endl;
+			board.print();
 			throw("Illegal move attempted");
 		}
 		board.makeMove(move);
@@ -227,11 +229,4 @@ namespace chess
 	void chess::Game::resetMoveHighlights() {
 		display.highlightMap = 0ULL;
 	}
-}
-
-int main() {
-	using namespace chess;
-	Game game(false, true);
-	Result res = game.run();
-	std::cout << (int)res << std::endl;
 }

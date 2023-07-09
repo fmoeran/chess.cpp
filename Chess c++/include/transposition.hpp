@@ -29,6 +29,8 @@ namespace chess
 
 		void replace(TTEntry entry);
 
+		void clear();
+
 		double percentFull();
 	private:
 		size_t size;

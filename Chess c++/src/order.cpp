@@ -15,7 +15,7 @@ namespace chess
 				if (bitset[getStart(move)] & board.positions[board.colour][piece]) startPiece = piece;
 				if (bitset[getEnd(move)] & board.positions[!board.colour][piece]) endPiece = piece;
 			}
-			value += pieceWorths[endPiece] - pieceWorths[startPiece];
+			value += pieceWorths[endPiece] - pieceWorths[startPiece] / 10;
 		}
 		
 		if (getFlag(move) == Flag::PROMOTION) {
@@ -28,6 +28,7 @@ namespace chess
 
 	void order(const Board& board, MoveList& moves) {
 		std::vector<std::pair<Move, int> > moveValuePairs;
+		moveValuePairs.reserve(moves.size());
 		for (Move move : moves) moveValuePairs.push_back({ move, -estimateValue(board, move) });
 
 		std::sort(moveValuePairs.begin(), moveValuePairs.end());

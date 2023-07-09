@@ -18,7 +18,7 @@ namespace chess
 		Generator(Board& pboard);
 
 
-		void getLegalMoves(MoveList* moveList);
+		void getLegalMoves(MoveList* moveList, bool captures=false);
 		Board* board;
 
 		bool isCheck();
@@ -71,6 +71,7 @@ namespace chess
 		using iterator = Move*;
 		MoveList();
 		MoveList(Generator& generator);
+		MoveList(Generator& generator, bool onlyCaptures);
 
 		void add(Move move);
 

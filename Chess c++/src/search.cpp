@@ -21,24 +21,28 @@ namespace chess
 {
 	const int MAX_SEARCH_DEPTH = 10000;
 
-	const int DEFAULT_TIME = 1000.0; // milliseconds
+	const int DEFAULT_TIME = 100.0; // milliseconds
 
 	const size_t TRANSPOSITION_SIZE = 10000000;
 
 	const int POSITIVE_INFINITY = 99999999;
 	const int NEGATIVE_INFINITY = -POSITIVE_INFINITY;
 
+	const int CHECKMATE_SCORE = -9999999;
+
 	Bot::Bot(): tt(TRANSPOSITION_SIZE) {
 		maxSearchTime = DEFAULT_TIME;
 		nodes = 0;
 	}
 
-	Bot::Bot(double searchTime) : tt(TRANSPOSITION_SIZE) {
+	Bot::Bot(double searchTime, bool quies) : tt(TRANSPOSITION_SIZE), runQuiescence(quies) {
 		maxSearchTime = searchTime;
 		nodes = 0;
 	}
 
 	Move Bot::search(Board board) {
+		//tt.clear();
+
 		transposCount = 0;
 		nodes = 0;
 		searchStartTime = std::chrono::system_clock::now();
@@ -66,14 +70,16 @@ namespace chess
 			std::cout.flush();
 		}
 		std::cout << std::endl;
+
+		if (board.colour == BLACK) bestEval = -bestEval;
 		
 		std::cout << "nodes: " << formatToCommas(std::to_string(nodes)) << std::endl;
-		std::cout << "value: " << formatToCommas(std::to_string(bestRootEval)) << std::endl;
+		std::cout << "n/s: " << formatToCommas(std::to_string((int)(nodes/maxSearchTime * 1000))) << std::endl;
+		std::cout << "value: " << formatToCommas(std::to_string(bestEval)) << std::endl;
 		std::cout << "transpositions: " << formatToCommas(std::to_string(transposCount)) << std::endl;
 		std::cout << "transpos storage used: " << tt.percentFull() << '%' << std::endl;
 
-		return bestRootMove;
-
+		return bestMove;
 	}
 
 	void Bot::searchRoot(Board& board, int depth) {
@@ -116,14 +122,15 @@ namespace chess
 		if (shouldFinishSearch()) return beta;
 
 		if (depth == 0) {
-			return evaluate(board);
+			if (runQuiescence) return quiescence(board, -beta, -alpha);
+			else return evaluate(board);
 		}
 
 		MoveList moves(generator);
 		
 
 		if (moves.size() == 0) {
-			if (generator.isCheck()) return NEGATIVE_INFINITY - depth; // subtract depth to favour mates in shorter time spans
+			if (generator.isCheck()) return CHECKMATE_SCORE - depth; // subtract depth to favour mates in shorter time spans
 			else return 0;
 		}
 
@@ -158,11 +165,52 @@ namespace chess
 		return best;
 	}
 
+	int Bot::quiescence(Board& board, int alpha, int beta) {
+		if (tt.contains(board.zobrist, 0, alpha, beta, true)) {
+			transposCount++;
+			return tt[board.zobrist].value;
+		}
+
+		int currentEval = evaluate(board);
+
+		if (currentEval >= beta) {
+			return beta;
+		}
+		if (currentEval > alpha) {
+			alpha = currentEval;
+		}
+
+		MoveList moves(generator, true);
+
+		order(board, moves);
+
+		NodeType nodeType = NodeType::LOWER;
+
+		for (Move move : moves) {
+			nodes++;
+			board.makeMove(move);
+			int score = -quiescence(board, -beta, -alpha);
+			board.unmakeMove(move);
+
+			if (score >= beta) {
+				nodeType = NodeType::UPPER;
+				alpha = beta;
+				break;
+			}
+			if (score > alpha) {
+				nodeType = NodeType::LOWER;
+				alpha = score;
+			}
+		}
+
+		TTEntry entry = { board.zobrist, 0, alpha, nodeType, true };
+		tt.replace(entry);
+
+		return alpha;
+	}
+
 	bool Bot::shouldFinishSearch() {
 		using namespace std::chrono;
 		return duration_cast<milliseconds>(system_clock::now() - searchStartTime).count() > maxSearchTime;
 	}
-
-
-
 }
