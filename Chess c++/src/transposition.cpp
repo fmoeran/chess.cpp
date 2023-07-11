@@ -16,16 +16,14 @@ namespace chess
 	}
 
 	TTEntry& TranspositionTable::operator[](Zobrist zobrist) {
-		size_t ind = zobrist % size;
-		return table[ind];
+		return table[zobrist % size];
 	}
 
-	bool TranspositionTable::contains(Zobrist zobrist, int depth, int alpha, int beta, bool inQuies) {
+	bool TranspositionTable::contains(Zobrist zobrist, int depth, int alpha, int beta) {
 		TTEntry entry = table[zobrist % size];
 		if (entry.zobrist != zobrist || entry.depth < depth ||
 			(entry.nodeType == NodeType::LOWER && entry.value < beta) ||
-			(entry.nodeType == NodeType::UPPER && entry.value > alpha) ||
-			(entry.inQuies && !inQuies))
+			(entry.nodeType == NodeType::UPPER && entry.value > alpha))
 			return false;
 		return true;
 	}

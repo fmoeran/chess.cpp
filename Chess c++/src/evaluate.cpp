@@ -253,6 +253,7 @@ namespace chess
 	int evaluate(const Board& board)
 	{
         int scoreSum = getScoreSum(board);
+
         int mgSum = getMidGameTableSum(board);
         int egSum = getEndGameTableSum(board);
         int gamePhase = getGamePhase(board); // lower = late game, higher = early game

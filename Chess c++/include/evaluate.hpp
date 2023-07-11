@@ -13,5 +13,6 @@ namespace chess
         0    // king
     };
 
+
 	int evaluate(const Board& board);
 }

@@ -29,6 +29,8 @@ namespace chess
 
 		Generator generator;
 		int nodes;
+		int evalCount;
+		int collisions;
 		// stored in milliseconds
 		double maxSearchTime;
 		// time that a search started
@@ -42,7 +44,7 @@ namespace chess
 
 		int negamax(Board& board, int depth, int alpha, int beta);
 
-		int quiescence(Board& board, int alpha, int beta);
+		int quiescence(Board& board, int depth, int alpha, int beta);
 
 	};
 }

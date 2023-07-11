@@ -124,6 +124,19 @@ namespace chess
 		setGameState(ep, wlc, wrc, blc, brc, move_count, hm, colour);
 		loadZobrist();
 	}
+
+
+	bool Board::operator==(Board& other) {
+		for (Type piece = PAWN; piece <= KING; piece++ ) {
+			if (positions[BLACK][piece] != other.positions[BLACK][piece]) return false;
+			if (positions[WHITE][piece] != other.positions[WHITE][piece]) return false;
+		}
+		return colour == other.colour && rightCastles == other.rightCastles
+			&& leftCastles == other.leftCastles && epMap == other.epMap;
+
+	}
+
+
 	Board::Board() {
 		*this = Board::fromFen(startingFen);
 	}

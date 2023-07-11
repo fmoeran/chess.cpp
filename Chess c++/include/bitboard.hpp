@@ -79,6 +79,8 @@ namespace chess
 		      bool wlc, bool wrc, bool blc, bool brc, int move_count, int hm, Colour colour);
 		Board();
 
+		bool operator==(Board& other);
+
 		// returns a fully initialied instance of a Board from a FEN string
 		static Board fromFen(std::string fen); 
 

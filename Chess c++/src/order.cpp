@@ -6,7 +6,7 @@
 
 namespace chess
 {
-	int estimateValue(const Board& board, Move move) {
+	int estimateValue(const Board& board, Move move, TranspositionTable& tt) {
 		int value = 0;
 		bool capture = bitset[getEnd(move)] & board.teamMaps[!board.colour];
 		if (capture) {
@@ -22,19 +22,24 @@ namespace chess
 			value += pieceWorths[getPromotion(move)];
 		}
 
+		Move hashMove = tt[board.zobrist].move;
+		if (hashMove == move) {
+			value += 10000;
+		}
+
 		return value;
 	}
 
 
-	void order(const Board& board, MoveList& moves) {
-		std::vector<std::pair<Move, int> > moveValuePairs;
+	void order(const Board& board, MoveList& moves, TranspositionTable& tt) {
+		std::vector<std::pair<int, Move> > moveValuePairs;
 		moveValuePairs.reserve(moves.size());
-		for (Move move : moves) moveValuePairs.push_back({ move, -estimateValue(board, move) });
+		for (Move move : moves) moveValuePairs.push_back({ -estimateValue(board, move, tt), move });
 
 		std::sort(moveValuePairs.begin(), moveValuePairs.end());
 
 		moves.clear();
-		for (auto [move, value] : moveValuePairs) {
+		for (auto [value, move] : moveValuePairs) {
 			moves.add(move);
 		}
 	}

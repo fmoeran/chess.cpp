@@ -13,9 +13,9 @@ namespace chess
 	struct TTEntry {
 		Zobrist zobrist;
 		int depth;
+		Move move;
 		int value;
 		NodeType nodeType;
-		bool inQuies;
 	};
 
 	struct TranspositionTable {
@@ -25,7 +25,7 @@ namespace chess
 
 		TTEntry& operator[](Zobrist zobrist);
 
-		bool contains(Zobrist zobrist, int depth, int alpha, int beta, bool inQuies = false);
+		bool contains(Zobrist zobrist, int depth, int alpha, int beta);
 
 		void replace(TTEntry entry);
 
